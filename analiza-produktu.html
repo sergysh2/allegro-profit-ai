@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Analiza produktu Allegro</title>
+    <link rel="stylesheet" href="analysis.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="Analiza produktu Allegro">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Analiza produktu Allegro</h1>
+            </div>
+          </div>
+          <a class="nav-link" href="index.html">Kalkulator zysku</a>
+        </header>
+
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">Moduł analizy</span>
+            <h2>Sprawdź potencjał oferty przed zakupem towaru</h2>
+            <p>Wklej link do oferty Allegro. Na razie pokazujemy przykładowy wynik, gotowy pod przyszłe połączenie z API.</p>
+          </div>
+
+          <form class="analysis-form" id="analysis-form">
+            <label class="field">
+              <span>Link do oferty Allegro</span>
+              <div class="input-row">
+                <input id="offer-link" type="url" placeholder="https://allegro.pl/oferta/..." autocomplete="url" />
+                <button type="submit">Analizuj</button>
+              </div>
+            </label>
+          </form>
+        </section>
+
+        <section class="dashboard hidden" id="result-panel" aria-label="Wynik analizy">
+          <div class="result-header">
+            <div>
+              <span class="eyebrow">Wynik analizy</span>
+              <h2 id="product-name">Nazwa produktu</h2>
+            </div>
+            <div class="score">
+              <span>Ocena potencjału</span>
+              <strong id="potential-score">8/10</strong>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <article class="metric">
+              <span>Cena sprzedaży</span>
+              <strong id="sale-price">149,99 zł</strong>
+            </article>
+
+            <article class="metric">
+              <span>Prowizja Allegro</span>
+              <strong id="commission">15,00 zł</strong>
+            </article>
+
+            <article class="metric positive">
+              <span>Szacowany zysk</span>
+              <strong id="estimated-profit">42,50 zł</strong>
+            </article>
+
+            <article class="metric">
+              <span>Poziom konkurencji</span>
+              <strong id="competition-level">Średni</strong>
+            </article>
+          </div>
+
+          <div class="insight-row">
+            <article class="insight">
+              <span>Rekomendacja</span>
+              <p>Oferta wygląda obiecująco. W kolejnym kroku warto porównać cenę zakupu, liczbę konkurentów i koszt reklam.</p>
+            </article>
+
+            <article class="insight compact">
+              <span>Status</span>
+              <p>Makietowy wynik bez połączenia z Allegro.</p>
+            </article>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="analysis.js"></script>
+  </body>
+</html>

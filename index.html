@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Allegro Profit AI</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="Kalkulator rentownosci Allegro">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Kalkulator rentowności oferty</h1>
+            </div>
+          </div>
+          <div class="status-pill">MVP v2</div>
+        </header>
+
+        <div class="summary-row" aria-label="Najwazniejsze wyniki">
+          <article class="metric main-metric" id="final-card">
+            <span>Zysk netto końcowy</span>
+            <strong id="final-net-profit">0,00 zł</strong>
+          </article>
+          <article class="metric">
+            <span>Przychód</span>
+            <strong id="revenue">0,00 zł</strong>
+          </article>
+          <article class="metric">
+            <span>Koszty całkowite</span>
+            <strong id="total-costs">0,00 zł</strong>
+          </article>
+        </div>
+
+        <div class="workspace">
+          <form class="form-card" id="profit-form">
+            <div class="section-title">
+              <h2>Dane oferty</h2>
+              <p>Wpisz wartości brutto dla sprzedaży na Allegro.</p>
+            </div>
+
+            <div class="fields-grid">
+              <label class="field">
+                <span>Cena zakupu</span>
+                <div class="input-box">
+                  <input id="purchase-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                  <strong>PLN</strong>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>Cena sprzedaży</span>
+                <div class="input-box">
+                  <input id="sale-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                  <strong>PLN</strong>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>Koszt dostawy</span>
+                <div class="input-box">
+                  <input id="delivery-cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                  <strong>PLN</strong>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>Koszt pakowania</span>
+                <div class="input-box">
+                  <input id="packing-cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                  <strong>PLN</strong>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>Stawka VAT</span>
+                <div class="input-box">
+                  <input id="vat-rate" type="number" inputmode="decimal" min="0" step="0.01" value="23" />
+                  <strong>%</strong>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>Prowizja Allegro</span>
+                <div class="input-box">
+                  <input id="allegro-commission-rate" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" />
+                  <strong>%</strong>
+                </div>
+              </label>
+
+              <label class="field">
+                <span>Koszt Allegro Ads</span>
+                <div class="input-box">
+                  <input id="ads-rate" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" />
+                  <strong>%</strong>
+                </div>
+              </label>
+
+              <fieldset class="toggle-field">
+                <legend>Darmowa dostawa</legend>
+                <div class="segmented" role="radiogroup" aria-label="Darmowa dostawa">
+                  <label>
+                    <input type="radio" name="free-delivery" value="yes" />
+                    <span>Tak</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="free-delivery" value="no" checked />
+                    <span>Nie</span>
+                  </label>
+                </div>
+              </fieldset>
+            </div>
+          </form>
+
+          <section class="results-card" aria-label="Szczegoly wyniku">
+            <div class="section-title">
+              <h2>Podsumowanie</h2>
+              <p>Rozbicie prowizji, reklamy, VAT i kosztów.</p>
+            </div>
+
+            <div class="results-list">
+              <article class="result">
+                <span>Przychód</span>
+                <strong id="revenue-detail">0,00 zł</strong>
+              </article>
+
+              <article class="result">
+                <span>Koszty całkowite</span>
+                <strong id="total-costs-detail">0,00 zł</strong>
+              </article>
+
+              <article class="result">
+                <span>Prowizja Allegro</span>
+                <strong id="allegro-commission">0,00 zł</strong>
+              </article>
+
+              <article class="result">
+                <span>Koszt reklamy</span>
+                <strong id="ads-cost">0,00 zł</strong>
+              </article>
+
+              <article class="result">
+                <span>VAT</span>
+                <strong id="vat">0,00 zł</strong>
+              </article>
+
+              <article class="result final" id="final-detail-card">
+                <span>Zysk netto końcowy</span>
+                <strong id="final-net-profit-detail">0,00 zł</strong>
+              </article>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

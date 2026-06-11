@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Allegro Profit AI</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="panel" aria-label="Kalkulator zysku Allegro">
+        <header class="header">
+          <div class="brand-icon" aria-hidden="true">A</div>
+          <div>
+            <p>Allegro Profit AI</p>
+            <h1>Kalkulator zysku dla sprzedawcy</h1>
+          </div>
+        </header>
+
+        <div class="content">
+          <form class="form" id="profit-form">
+            <label class="field">
+              <span>Cena zakupu</span>
+              <div class="input-box">
+                <input id="purchase-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                <strong>PLN</strong>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Cena sprzedaży</span>
+              <div class="input-box">
+                <input id="sale-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                <strong>PLN</strong>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Koszt dostawy</span>
+              <div class="input-box">
+                <input id="delivery-cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                <strong>PLN</strong>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Stawka VAT</span>
+              <div class="input-box">
+                <input id="vat-rate" type="number" inputmode="decimal" min="0" step="0.01" value="23" />
+                <strong>%</strong>
+              </div>
+            </label>
+          </form>
+
+          <section class="results" aria-label="Wyniki">
+            <article class="result positive" id="gross-card">
+              <span>Zysk brutto</span>
+              <strong id="gross-profit">0,00 zł</strong>
+            </article>
+
+            <article class="result positive" id="net-card">
+              <span>Zysk netto</span>
+              <strong id="net-profit">0,00 zł</strong>
+            </article>
+
+            <article class="result">
+              <span>Marża %</span>
+              <strong id="margin">0,00%</strong>
+            </article>
+
+            <article class="result">
+              <span>VAT</span>
+              <strong id="vat">0,00 zł</strong>
+            </article>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

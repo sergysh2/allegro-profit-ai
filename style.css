@@ -1,0 +1,365 @@
+:root {
+  --orange: #ff5a00;
+  --orange-soft: #fff0e6;
+  --green: #0d8f5a;
+  --green-soft: #e9f8f1;
+  --red: #c73632;
+  --red-soft: #fff0ef;
+  --blue: #245fce;
+  --ink: #15171a;
+  --muted: #69707a;
+  --line: #e2e5ea;
+  --surface: #ffffff;
+  --page: #f4f6f8;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--page);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+input,
+button {
+  font: inherit;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 90, 0, 0.08), rgba(255, 255, 255, 0) 300px),
+    var(--page);
+}
+
+.shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 0 22px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--orange), #1f7a54);
+  box-shadow: 0 12px 26px rgba(255, 90, 0, 0.2);
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.brand p,
+.section-title p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.brand p {
+  color: var(--orange);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.brand h1,
+.section-title h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.brand h1 {
+  margin-top: 3px;
+  font-size: clamp(1.35rem, 3vw, 2.15rem);
+  line-height: 1.08;
+}
+
+.status-pill {
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #48505a;
+  background: rgba(255, 255, 255, 0.78);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.metric,
+.form-card,
+.results-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 45px rgba(20, 28, 40, 0.08);
+}
+
+.metric {
+  min-height: 106px;
+  padding: 19px;
+}
+
+.metric span,
+.result span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.metric strong {
+  display: block;
+  margin-top: 10px;
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
+  line-height: 1.04;
+  overflow-wrap: anywhere;
+}
+
+.main-metric {
+  border-color: rgba(255, 90, 0, 0.24);
+  background: linear-gradient(135deg, #ffffff, var(--orange-soft));
+}
+
+.metric.positive,
+.result.final.positive {
+  border-color: rgba(13, 143, 90, 0.32);
+  background: linear-gradient(135deg, #ffffff, var(--green-soft));
+}
+
+.metric.negative,
+.result.final.negative {
+  border-color: rgba(199, 54, 50, 0.32);
+  background: linear-gradient(135deg, #ffffff, var(--red-soft));
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(330px, 0.85fr);
+  gap: 14px;
+}
+
+.form-card,
+.results-card {
+  padding: 22px;
+}
+
+.section-title {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.section-title h2 {
+  font-size: 1.05rem;
+}
+
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span,
+.toggle-field legend {
+  color: #34383e;
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.input-box {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  min-height: 54px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.input-box:focus-within {
+  border-color: var(--orange);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.12);
+}
+
+.input-box input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 15px 0 15px 16px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 1rem;
+  font-weight: 760;
+}
+
+.input-box input::placeholder {
+  color: #a5abb4;
+}
+
+.input-box strong {
+  min-width: 52px;
+  padding: 0 15px 0 10px;
+  color: var(--muted);
+  text-align: right;
+  font-size: 0.82rem;
+}
+
+.toggle-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  min-height: 54px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.segmented label {
+  min-width: 0;
+  display: grid;
+}
+
+.segmented input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented span {
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.segmented input:checked + span {
+  color: #fff;
+  background: var(--ink);
+  box-shadow: 0 8px 18px rgba(21, 23, 26, 0.15);
+}
+
+.results-list {
+  display: grid;
+  gap: 10px;
+}
+
+.result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-height: 62px;
+  padding: 14px 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.result strong {
+  color: var(--ink);
+  font-size: 1.06rem;
+  line-height: 1.1;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.result.final {
+  min-height: 76px;
+  margin-top: 4px;
+}
+
+.result.final strong {
+  font-size: 1.35rem;
+}
+
+@media (max-width: 900px) {
+  .summary-row,
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .app {
+    padding: 14px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .summary-row {
+    gap: 10px;
+  }
+
+  .form-card,
+  .results-card,
+  .metric {
+    padding: 16px;
+  }
+
+  .fields-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .result strong {
+    text-align: left;
+  }
+}
