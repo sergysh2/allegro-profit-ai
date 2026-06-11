@@ -105,6 +105,11 @@ button {
   line-height: 1.08;
 }
 
+.nav-links {
+  display: flex;
+  gap: 8px;
+}
+
 .nav-link {
   display: inline-flex;
   align-items: center;
@@ -327,6 +332,15 @@ button {
   .input-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .nav-links {
+    width: 100%;
+  }
+
+  .nav-link {
+    flex: 1;
+    justify-content: center;
   }
 
   .hero-panel,

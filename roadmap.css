@@ -1,0 +1,292 @@
+:root {
+  --orange: #ff5a00;
+  --orange-soft: #fff0e6;
+  --green: #0d8f5a;
+  --green-soft: #e9f8f1;
+  --ink: #15171a;
+  --muted: #69707a;
+  --line: #e2e5ea;
+  --page: #f4f6f8;
+  --surface: #ffffff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--page);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 90, 0, 0.08), rgba(255, 255, 255, 0) 330px),
+    var(--page);
+}
+
+.shell {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 8px 0 22px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--orange), #1f7a54);
+  box-shadow: 0 12px 26px rgba(255, 90, 0, 0.2);
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.brand p,
+.eyebrow {
+  margin: 0;
+  color: var(--orange);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.brand h1,
+.hero h2,
+.stage h3 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.brand h1 {
+  margin-top: 3px;
+  font-size: clamp(1.35rem, 3vw, 2.15rem);
+  line-height: 1.08;
+}
+
+.nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: #363d46;
+  background: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.hero,
+.timeline {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(20, 28, 40, 0.08);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: end;
+  padding: 28px;
+  margin-bottom: 14px;
+}
+
+.hero h2 {
+  max-width: 760px;
+  margin-top: 10px;
+  font-size: clamp(1.65rem, 4vw, 3.3rem);
+  line-height: 1.02;
+}
+
+.hero-card {
+  min-height: 150px;
+  padding: 18px;
+  border: 1px solid rgba(13, 143, 90, 0.3);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fff, var(--green-soft));
+}
+
+.hero-card span,
+.stage-heading span {
+  display: inline-flex;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.hero-card strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--green);
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.hero-card p {
+  margin: 12px 0 0;
+  color: #39414b;
+  line-height: 1.5;
+}
+
+.timeline {
+  display: grid;
+  gap: 0;
+  padding: 8px;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 16px;
+  padding: 18px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.stage + .stage {
+  border-top: 1px solid var(--line);
+}
+
+.stage-marker {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: #4f5965;
+  background: #fbfcfd;
+  font-weight: 900;
+}
+
+.stage.done .stage-marker {
+  border-color: rgba(13, 143, 90, 0.32);
+  color: #fff;
+  background: var(--green);
+}
+
+.stage-content {
+  min-width: 0;
+}
+
+.stage-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.stage h3 {
+  font-size: 1.2rem;
+}
+
+.stage.done .stage-heading span {
+  color: var(--green);
+}
+
+.stage ul {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stage li {
+  position: relative;
+  padding-left: 20px;
+  color: #343b45;
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+.stage li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+
+.stage.done li::before {
+  background: var(--green);
+}
+
+@media (max-width: 760px) {
+  .app {
+    padding: 14px;
+  }
+
+  .topbar,
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nav {
+    width: 100%;
+  }
+
+  .nav a {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .hero,
+  .stage {
+    padding: 16px;
+  }
+
+  .stage {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .stage-marker {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stage-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
