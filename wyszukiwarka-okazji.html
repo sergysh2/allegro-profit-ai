@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Wyszukiwarka okazji - Allegro Profit AI</title>
+    <link rel="stylesheet" href="opportunities.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="Wyszukiwarka okazji Allegro">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Wyszukiwarka okazji</h1>
+            </div>
+          </div>
+          <nav class="nav-links" aria-label="Nawigacja">
+            <a class="nav-link" href="index.html">Kalkulator</a>
+            <a class="nav-link" href="analiza-produktu.html">Analiza</a>
+            <a class="nav-link active" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="roadmap.html">Roadmap</a>
+          </nav>
+        </header>
+
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">MVP v3 demo</span>
+            <h2>Znajdź produkty z najlepszym potencjałem sprzedaży na Allegro</h2>
+            <p>Ustaw podstawowe filtry i uruchom demo-wyszukiwanie. Wyniki są lokalne, bez połączenia z API i bez pobierania danych z Allegro.</p>
+          </div>
+
+          <form class="finder-form" id="finder-form">
+            <label class="field">
+              <span>Kategoria</span>
+              <select id="category">
+                <option value="all">Wszystkie</option>
+                <option value="Zabawki">Zabawki</option>
+                <option value="Dom i ogród">Dom i ogród</option>
+                <option value="Elektronika">Elektronika</option>
+                <option value="Beauty">Beauty</option>
+                <option value="Sport">Sport</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Cena zakupu od</span>
+              <div class="input-box">
+                <input id="price-from" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
+                <strong>PLN</strong>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Cena zakupu do</span>
+              <div class="input-box">
+                <input id="price-to" type="number" inputmode="decimal" min="0" step="0.01" placeholder="300,00" />
+                <strong>PLN</strong>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Minimalna marża %</span>
+              <div class="input-box">
+                <input id="min-margin" type="number" inputmode="decimal" min="0" step="0.01" value="15" />
+                <strong>%</strong>
+              </div>
+            </label>
+
+            <label class="field">
+              <span>Maksymalna konkurencja</span>
+              <select id="max-competition">
+                <option value="3">Wysoka</option>
+                <option value="2" selected>Średnia</option>
+                <option value="1">Niska</option>
+              </select>
+            </label>
+
+            <button class="primary-button" type="submit">Szukaj okazji</button>
+          </form>
+        </section>
+
+        <section class="results-panel hidden" id="results-panel" aria-label="Wyniki wyszukiwania okazji">
+          <div class="results-header">
+            <div>
+              <span class="eyebrow">Wyniki demo</span>
+              <h2>Najlepsze okazje według filtrów</h2>
+            </div>
+            <div class="counter">
+              <span>Znaleziono</span>
+              <strong id="result-count">0</strong>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Produkt</th>
+                  <th>Kategoria</th>
+                  <th>Cena zakupu</th>
+                  <th>Cena sprzedaży</th>
+                  <th>Zysk netto</th>
+                  <th>Marża %</th>
+                  <th>ROI %</th>
+                  <th>Konkurencja</th>
+                  <th>Ocena potencjału</th>
+                  <th>Rekomendacja</th>
+                </tr>
+              </thead>
+              <tbody id="results-body"></tbody>
+            </table>
+          </div>
+
+          <p class="empty-state hidden" id="empty-state">Brak produktów spełniających wybrane filtry. Spróbuj obniżyć minimalną marżę albo zwiększyć maksymalną konkurencję.</p>
+        </section>
+      </section>
+    </main>
+
+    <script src="opportunities.js"></script>
+  </body>
+</html>

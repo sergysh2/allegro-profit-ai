@@ -6,12 +6,14 @@ Statyczny projekt w stylu SaaS do kalkulacji zysku i demo-analizy produktu Alleg
 
 - `index.html` - kalkulator rentownosci oferty Allegro.
 - `analiza-produktu.html` - MVP v2 demo analizy produktu po linku Allegro.
+- `wyszukiwarka-okazji.html` - MVP v3 demo wyszukiwarki okazji.
 - `roadmap.html` - roadmap projektu.
 
 ## Status
 
 - MVP v1: gotowe.
 - MVP v2: częściowo gotowe.
+- MVP v3: Wyszukiwarka okazji demo - gotowe.
 
 ## MVP v2 demo
 
@@ -36,7 +38,7 @@ Wynik pokazuje:
 
 ## Uruchomienie
 
-Otworz plik `index.html`, `analiza-produktu.html` lub `roadmap.html` w przegladarce.
+Otworz plik `index.html`, `analiza-produktu.html`, `wyszukiwarka-okazji.html` lub `roadmap.html` w przegladarce.
 
 Jesli chcesz uruchomic lokalny serwer:
 
@@ -50,5 +52,6 @@ Adresy:
 ```text
 http://127.0.0.1:8080/index.html
 http://127.0.0.1:8080/analiza-produktu.html
+http://127.0.0.1:8080/wyszukiwarka-okazji.html
 http://127.0.0.1:8080/roadmap.html
 ```
