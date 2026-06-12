@@ -26,9 +26,9 @@
 
         <section class="hero-panel">
           <div class="hero-copy">
-            <span class="eyebrow">Moduł analizy</span>
-            <h2>Sprawdź potencjał oferty przed zakupem towaru</h2>
-            <p>Wklej link do oferty Allegro. Na razie pokazujemy przykładowy wynik, gotowy pod przyszłe połączenie z API.</p>
+            <span class="eyebrow">MVP v2 demo</span>
+            <h2>Analiza potencjału produktu na podstawie linku Allegro</h2>
+            <p>Wklej link do oferty. Bez API Allegro pokazujemy demo-scenariusz zależny od słów w adresie: toy, zabawka, phone lub telefon.</p>
           </div>
 
           <form class="analysis-form" id="analysis-form">
@@ -36,55 +36,78 @@
               <span>Link do oferty Allegro</span>
               <div class="input-row">
                 <input id="offer-link" type="url" placeholder="https://allegro.pl/oferta/..." autocomplete="url" />
-                <button type="submit">Analizuj</button>
               </div>
             </label>
+            <div class="actions-row">
+              <button class="primary-button" type="submit">Analizuj</button>
+              <button class="secondary-button" id="clear-button" type="button">Wyczyść</button>
+            </div>
           </form>
         </section>
 
         <section class="dashboard hidden" id="result-panel" aria-label="Wynik analizy">
           <div class="result-header">
             <div>
-              <span class="eyebrow">Wynik analizy</span>
+              <span class="eyebrow" id="scenario-label">Wynik demo</span>
               <h2 id="product-name">Nazwa produktu</h2>
             </div>
-            <div class="score">
+            <div class="score" id="score-card">
               <span>Ocena potencjału</span>
-              <strong id="potential-score">8/10</strong>
+              <strong id="potential-score">0/10</strong>
             </div>
           </div>
 
           <div class="metrics-grid">
             <article class="metric">
               <span>Cena sprzedaży</span>
-              <strong id="sale-price">149,99 zł</strong>
+              <strong id="sale-price">0,00 zł</strong>
             </article>
 
             <article class="metric">
               <span>Prowizja Allegro</span>
-              <strong id="commission">15,00 zł</strong>
+              <strong id="commission">0,00 zł</strong>
             </article>
 
-            <article class="metric positive">
-              <span>Szacowany zysk</span>
-              <strong id="estimated-profit">42,50 zł</strong>
+            <article class="metric">
+              <span>Koszt dostawy</span>
+              <strong id="delivery-cost">0,00 zł</strong>
+            </article>
+
+            <article class="metric result-profit" id="profit-card">
+              <span>Szacowany zysk netto</span>
+              <strong id="estimated-net-profit">0,00 zł</strong>
+            </article>
+
+            <article class="metric">
+              <span>Marża %</span>
+              <strong id="margin">0,00%</strong>
+            </article>
+
+            <article class="metric">
+              <span>ROI %</span>
+              <strong id="roi">0,00%</strong>
             </article>
 
             <article class="metric">
               <span>Poziom konkurencji</span>
               <strong id="competition-level">Średni</strong>
             </article>
+
+            <article class="metric recommendation-card" id="recommendation-card">
+              <span>Rekomendacja</span>
+              <strong id="recommendation">Warto testować</strong>
+            </article>
           </div>
 
           <div class="insight-row">
             <article class="insight">
-              <span>Rekomendacja</span>
-              <p>Oferta wygląda obiecująco. W kolejnym kroku warto porównać cenę zakupu, liczbę konkurentów i koszt reklam.</p>
+              <span>Interpretacja</span>
+              <p id="insight-copy">Wynik pojawi się po analizie linku.</p>
             </article>
 
             <article class="insight compact">
-              <span>Status</span>
-              <p>Makietowy wynik bez połączenia z Allegro.</p>
+              <span>Status danych</span>
+              <p>Demo bez połączenia z API Allegro. Wyniki są generowane lokalnie.</p>
             </article>
           </div>
         </section>

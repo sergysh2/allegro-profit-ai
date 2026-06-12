@@ -1,15 +1,42 @@
 # Allegro Profit AI
 
-Statyczny SaaS-style projekt do kalkulacji zysku i makietowej analizy produktu Allegro.
+Statyczny projekt w stylu SaaS do kalkulacji zysku i demo-analizy produktu Allegro.
 
 ## Strony
 
 - `index.html` - kalkulator rentownosci oferty Allegro.
-- `analiza-produktu.html` - makieta analizy produktu Allegro.
+- `analiza-produktu.html` - MVP v2 demo analizy produktu po linku Allegro.
+- `roadmap.html` - roadmap projektu.
+
+## Status
+
+- MVP v1: gotowe.
+- MVP v2: częściowo gotowe.
+
+## MVP v2 demo
+
+Strona `analiza-produktu.html` nie laczy sie jeszcze z prawdziwym API Allegro. Po kliknieciu `Analizuj` wybiera jeden z lokalnych scenariuszy:
+
+- link zawiera `toy` albo `zabawka` - dobry potencjal;
+- link zawiera `phone` albo `telefon` - wysoka konkurencja;
+- zwykly link - sredni potencjal.
+
+Wynik pokazuje:
+
+- Nazwa produktu
+- Cena sprzedazy
+- Prowizja Allegro
+- Koszt dostawy
+- Szacowany zysk netto
+- Marza %
+- ROI %
+- Poziom konkurencji
+- Ocena potencjalu 1-10
+- Rekomendacja
 
 ## Uruchomienie
 
-Otworz plik `index.html` lub `analiza-produktu.html` w przegladarce.
+Otworz plik `index.html`, `analiza-produktu.html` lub `roadmap.html` w przegladarce.
 
 Jesli chcesz uruchomic lokalny serwer:
 
@@ -23,4 +50,5 @@ Adresy:
 ```text
 http://127.0.0.1:8080/index.html
 http://127.0.0.1:8080/analiza-produktu.html
+http://127.0.0.1:8080/roadmap.html
 ```

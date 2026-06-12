@@ -3,6 +3,10 @@
   --orange-soft: #fff0e6;
   --green: #0d8f5a;
   --green-soft: #e9f8f1;
+  --red: #c73632;
+  --red-soft: #fff0ef;
+  --amber: #b66a00;
+  --amber-soft: #fff6df;
   --blue: #245fce;
   --ink: #15171a;
   --muted: #69707a;
@@ -32,7 +36,7 @@ button {
   min-height: 100vh;
   padding: 24px;
   background:
-    linear-gradient(180deg, rgba(255, 90, 0, 0.08), rgba(255, 255, 255, 0) 310px),
+    linear-gradient(180deg, rgba(255, 90, 0, 0.08), rgba(255, 255, 255, 0) 330px),
     var(--page);
 }
 
@@ -45,6 +49,7 @@ button {
 .brand,
 .result-header,
 .input-row,
+.actions-row,
 .insight-row {
   display: flex;
 }
@@ -147,13 +152,13 @@ button {
 }
 
 .hero-copy h2 {
-  max-width: 620px;
+  max-width: 720px;
   font-size: clamp(1.55rem, 3.6vw, 3rem);
   line-height: 1.02;
 }
 
 .hero-copy p {
-  max-width: 560px;
+  max-width: 610px;
   margin: 0;
   color: var(--muted);
   font-size: 1rem;
@@ -162,7 +167,7 @@ button {
 
 .analysis-form {
   display: grid;
-  gap: 12px;
+  gap: 13px;
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -174,7 +179,8 @@ button {
   gap: 9px;
 }
 
-.input-row {
+.input-row,
+.actions-row {
   gap: 10px;
 }
 
@@ -198,22 +204,37 @@ button {
   box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.12);
 }
 
-.input-row button {
-  min-width: 132px;
-  min-height: 54px;
-  border: 0;
+.primary-button,
+.secondary-button {
+  min-height: 48px;
   border-radius: 8px;
-  color: #fff;
-  background: var(--ink);
   cursor: pointer;
   font-weight: 900;
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
-.input-row button:hover {
-  background: #25292f;
-  box-shadow: 0 12px 22px rgba(21, 23, 26, 0.18);
+.primary-button {
+  flex: 1;
+  border: 0;
+  color: #fff;
+  background: var(--ink);
+}
+
+.secondary-button {
+  min-width: 118px;
+  border: 1px solid var(--line);
+  color: #363d46;
+  background: #fff;
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  box-shadow: 0 12px 22px rgba(21, 23, 26, 0.14);
   transform: translateY(-1px);
+}
+
+.primary-button:hover {
+  background: #25292f;
 }
 
 .dashboard {
@@ -239,12 +260,22 @@ button {
 }
 
 .score {
-  min-width: 150px;
+  min-width: 170px;
   padding: 14px 16px;
   border: 1px solid rgba(13, 143, 90, 0.28);
   border-radius: 8px;
   background: var(--green-soft);
   text-align: right;
+}
+
+.score.warning {
+  border-color: rgba(182, 106, 0, 0.3);
+  background: var(--amber-soft);
+}
+
+.score.danger {
+  border-color: rgba(199, 54, 50, 0.3);
+  background: var(--red-soft);
 }
 
 .score strong {
@@ -253,6 +284,14 @@ button {
   color: var(--green);
   font-size: 1.65rem;
   line-height: 1;
+}
+
+.score.warning strong {
+  color: var(--amber);
+}
+
+.score.danger strong {
+  color: var(--red);
 }
 
 .metrics-grid {
@@ -273,16 +312,27 @@ button {
   padding: 17px;
 }
 
-.metric.positive {
+.metric.result-profit,
+.metric.recommendation-card.good {
   border-color: rgba(13, 143, 90, 0.32);
   background: linear-gradient(135deg, #fff, var(--green-soft));
+}
+
+.metric.recommendation-card.warning {
+  border-color: rgba(182, 106, 0, 0.3);
+  background: linear-gradient(135deg, #fff, var(--amber-soft));
+}
+
+.metric.recommendation-card.danger {
+  border-color: rgba(199, 54, 50, 0.3);
+  background: linear-gradient(135deg, #fff, var(--red-soft));
 }
 
 .metric strong {
   display: block;
   margin-top: 13px;
   color: var(--ink);
-  font-size: clamp(1.25rem, 2.3vw, 1.85rem);
+  font-size: clamp(1.18rem, 2.1vw, 1.68rem);
   line-height: 1.06;
   overflow-wrap: anywhere;
 }
@@ -298,7 +348,7 @@ button {
 }
 
 .insight.compact {
-  flex: 0 0 290px;
+  flex: 0 0 300px;
 }
 
 .insight p {
@@ -307,9 +357,14 @@ button {
   line-height: 1.5;
 }
 
-@media (max-width: 900px) {
-  .hero-panel,
+@media (max-width: 980px) {
   .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-panel {
     grid-template-columns: 1fr;
   }
 
@@ -329,7 +384,8 @@ button {
 
   .topbar,
   .result-header,
-  .input-row {
+  .input-row,
+  .actions-row {
     align-items: stretch;
     flex-direction: column;
   }
@@ -350,6 +406,10 @@ button {
 
   .analysis-form {
     padding: 14px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
   }
 
   .score {

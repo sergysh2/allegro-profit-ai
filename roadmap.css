@@ -195,6 +195,12 @@ body {
   background: var(--green);
 }
 
+.stage.active .stage-marker {
+  border-color: rgba(255, 90, 0, 0.36);
+  color: #fff;
+  background: var(--orange);
+}
+
 .stage-content {
   min-width: 0;
 }
@@ -212,6 +218,10 @@ body {
 
 .stage.done .stage-heading span {
   color: var(--green);
+}
+
+.stage.active .stage-heading span {
+  color: var(--orange);
 }
 
 .stage ul {
