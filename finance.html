@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Finanse - Allegro Profit AI</title>
+    <link rel="stylesheet" href="finance.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="Finance AI Allegro">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Finanse</h1>
+            </div>
+          </div>
+          <nav class="nav-links" aria-label="Nawigacja">
+            <a class="nav-link" href="index.html">Dashboard</a>
+            <a class="nav-link" href="analiza-produktu.html">Analiza</a>
+            <a class="nav-link" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="produkty.html">Produkty</a>
+            <a class="nav-link" href="orders.html">Zamowienia</a>
+            <a class="nav-link active" href="finance.html">Finanse</a>
+            <a class="nav-link" href="listing-studio.html">Listing Studio</a>
+            <a class="nav-link" href="product-hunter.html">Product Hunter</a>
+            <a class="nav-link" href="market-data-collector.html">Market Data</a>
+            <a class="nav-link" href="roadmap.html">Roadmap</a>
+            <a class="nav-link connect-link" href="http://localhost:3000/api/allegro/login">Polacz Allegro</a>
+          </nav>
+        </header>
+
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">MVP v10</span>
+            <h2>Finance AI z Opportunity Engine</h2>
+            <p>Uzupelnij koszty i sprawdz, ktore produkty maja najlepszy potencjal zakupu. Score, rekomendacje i filtry liczone sa lokalnie w przegladarce.</p>
+          </div>
+
+          <div class="actions-card">
+            <span>Zrodlo produktow</span>
+            <strong>GET /api/allegro/offers</strong>
+            <button class="primary-button" id="refresh-finance" type="button">Odswiez</button>
+          </div>
+        </section>
+
+        <section class="stats-grid" aria-label="Podsumowanie finansowe">
+          <article class="stat-card">
+            <span>Potencjalny zysk</span>
+            <strong id="total-profit">0,00 zl</strong>
+          </article>
+          <article class="stat-card">
+            <span>Srednia marza</span>
+            <strong id="average-margin">0,00%</strong>
+          </article>
+          <article class="stat-card">
+            <span>Najbardziej zyskowny</span>
+            <strong id="best-product">-</strong>
+          </article>
+          <article class="stat-card">
+            <span>Marza ponizej 10%</span>
+            <strong id="low-margin-count">0</strong>
+          </article>
+          <article class="stat-card score-card">
+            <span>Najlepszy Opportunity Score</span>
+            <strong id="best-score">0</strong>
+          </article>
+          <article class="stat-card score-card">
+            <span>Sredni Score</span>
+            <strong id="average-score">0</strong>
+          </article>
+          <article class="stat-card score-card">
+            <span>Perspektywiczne &gt;80</span>
+            <strong id="high-score-count">0</strong>
+          </article>
+          <article class="stat-card score-card">
+            <span>Ryzykowne &lt;50</span>
+            <strong id="risk-score-count">0</strong>
+          </article>
+        </section>
+
+        <section class="finance-panel" aria-label="Tabela finansowa produktow">
+          <div class="finance-toolbar">
+            <div>
+              <span class="eyebrow">Realne produkty Allegro</span>
+              <h2>Kalkulacja rentownosci i potencjalu</h2>
+            </div>
+            <div class="controls">
+              <label class="search-field">
+                <span>Szukaj</span>
+                <input id="finance-search" type="search" placeholder="Nazwa lub SKU" autocomplete="off" />
+              </label>
+              <label class="sort-field">
+                <span>Sortuj</span>
+                <select id="finance-sort">
+                  <option value="score-desc">Opportunity Score malejaco</option>
+                  <option value="score-asc">Opportunity Score rosnaco</option>
+                  <option value="profit-desc">Zysk malejaco</option>
+                  <option value="profit-asc">Zysk rosnaco</option>
+                  <option value="roi-desc">ROI malejaco</option>
+                  <option value="roi-asc">ROI rosnaco</option>
+                  <option value="margin-desc">Marza malejaco</option>
+                  <option value="margin-asc">Marza rosnaco</option>
+                  <option value="price-desc">Cena malejaco</option>
+                  <option value="price-asc">Cena rosnaco</option>
+                  <option value="stock-desc">Stan malejaco</option>
+                  <option value="stock-asc">Stan rosnaco</option>
+                </select>
+              </label>
+              <label class="sort-field">
+                <span>Filtr</span>
+                <select id="finance-filter">
+                  <option value="all">Wszystkie</option>
+                  <option value="promising">Tylko perspektywiczne</option>
+                  <option value="risky">Tylko ryzykowne</option>
+                  <option value="out-of-stock">Tylko brak w magazynie</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="auth-card hidden" id="auth-card">
+            <div>
+              <strong>Najpierw polacz konto Allegro przez /api/allegro/login</strong>
+              <p>Po autoryzacji backend pobierze produkty z endpointu `/api/allegro/offers`.</p>
+            </div>
+            <a href="http://localhost:3000/api/allegro/login">Polacz Allegro</a>
+          </div>
+
+          <p class="message hidden" id="finance-message"></p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nazwa</th>
+                  <th>SKU</th>
+                  <th>Cena sprzedazy</th>
+                  <th>Stan</th>
+                  <th>Zakup</th>
+                  <th>Pakowanie</th>
+                  <th>Dostawa</th>
+                  <th>Reklama</th>
+                  <th>Prowizja %</th>
+                  <th>VAT %</th>
+                  <th>Zysk netto</th>
+                  <th>ROI %</th>
+                  <th>Marza %</th>
+                  <th>Opportunity Score</th>
+                  <th>AI Recommendation</th>
+                </tr>
+              </thead>
+              <tbody id="finance-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="finance.js"></script>
+  </body>
+</html>

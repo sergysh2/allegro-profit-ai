@@ -131,6 +131,12 @@ button {
   font-weight: 800;
 }
 
+.connect-link {
+  border-color: rgba(255, 90, 0, 0.3);
+  color: #fff;
+  background: var(--ink);
+}
+
 .hero-panel,
 .dashboard {
   border: 1px solid var(--line);

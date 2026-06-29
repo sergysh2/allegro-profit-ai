@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Zamówienia - Allegro Profit AI</title>
+    <link rel="stylesheet" href="orders.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="CRM zamówień Allegro">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Zamówienia</h1>
+            </div>
+          </div>
+          <nav class="nav-links" aria-label="Nawigacja">
+            <a class="nav-link" href="index.html">Kalkulator</a>
+            <a class="nav-link" href="analiza-produktu.html">Analiza</a>
+            <a class="nav-link" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="produkty.html">Produkty</a>
+            <a class="nav-link active" href="orders.html">Zamówienia</a>
+            <a class="nav-link" href="finance.html">Finanse</a>
+            <a class="nav-link" href="listing-studio.html">Listing Studio</a>
+            <a class="nav-link" href="product-hunter.html">Product Hunter</a>
+            <a class="nav-link" href="market-data-collector.html">Market Data</a>
+            <a class="nav-link" href="roadmap.html">Roadmap</a>
+            <a class="nav-link connect-link" href="http://localhost:3000/api/allegro/login">Połącz Allegro</a>
+          </nav>
+        </header>
+
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">MVP v6</span>
+            <h2>Orders CRM table dla sprzedaży Allegro</h2>
+            <p>Panel pobiera realne zamówienia z backendu OAuth i pokazuje tylko dane potrzebne do pracy operacyjnej. Email, telefon i adres kupującego nie są wyświetlane.</p>
+          </div>
+
+          <div class="actions-card">
+            <span>Źródło danych</span>
+            <strong>GET /api/allegro/orders</strong>
+            <button class="primary-button" id="refresh-orders" type="button">Odśwież</button>
+          </div>
+        </section>
+
+        <section class="stats-grid" aria-label="Podsumowanie zamówień">
+          <article class="stat-card">
+            <span>Wszystkie zamówienia</span>
+            <strong id="total-orders">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Łączna sprzedaż</span>
+            <strong id="total-sales">0,00 zł</strong>
+          </article>
+          <article class="stat-card">
+            <span>Średni koszyk</span>
+            <strong id="average-order">0,00 zł</strong>
+          </article>
+        </section>
+
+        <section class="orders-panel" aria-label="Lista zamówień">
+          <div class="orders-toolbar">
+            <div>
+              <span class="eyebrow">Realne dane Allegro</span>
+              <h2>CRM zamówień</h2>
+            </div>
+            <label class="search-field">
+              <span>Szukaj</span>
+              <input id="orders-search" type="search" placeholder="ID zamówienia lub login kupującego" autocomplete="off" />
+            </label>
+          </div>
+
+          <div class="auth-card hidden" id="auth-card">
+            <div>
+              <strong>Najpierw połącz konto Allegro przez /api/allegro/login</strong>
+              <p>Po autoryzacji backend pobierze zamówienia z endpointu `/api/allegro/orders`.</p>
+            </div>
+            <a href="http://localhost:3000/api/allegro/login">Połącz Allegro</a>
+          </div>
+
+          <p class="message hidden" id="orders-message"></p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID zamówienia</th>
+                  <th>Data płatności</th>
+                  <th>Kupujący login</th>
+                  <th>Imię kupującego</th>
+                  <th>Suma</th>
+                  <th>Waluta</th>
+                  <th>Status płatności</th>
+                  <th>Liczba towarów</th>
+                </tr>
+              </thead>
+              <tbody id="orders-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="orders.js"></script>
+  </body>
+</html>

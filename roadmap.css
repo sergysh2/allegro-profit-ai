@@ -104,6 +104,12 @@ body {
   font-weight: 800;
 }
 
+.nav a.connect-link {
+  border-color: rgba(255, 90, 0, 0.3);
+  color: #fff;
+  background: var(--ink);
+}
+
 .hero,
 .timeline {
   border: 1px solid var(--line);

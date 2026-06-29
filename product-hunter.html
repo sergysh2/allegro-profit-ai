@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Product Hunter - Allegro Profit AI</title>
+    <link rel="stylesheet" href="finance.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="Product Hunter Allegro">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Product Hunter</h1>
+            </div>
+          </div>
+          <nav class="nav-links" aria-label="Nawigacja">
+            <a class="nav-link" href="index.html">Dashboard</a>
+            <a class="nav-link" href="analiza-produktu.html">Analiza</a>
+            <a class="nav-link" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="produkty.html">Produkty</a>
+            <a class="nav-link" href="orders.html">Zamowienia</a>
+            <a class="nav-link" href="finance.html">Finanse</a>
+            <a class="nav-link" href="listing-studio.html">Listing Studio</a>
+            <a class="nav-link active" href="product-hunter.html">Product Hunter</a>
+            <a class="nav-link" href="market-data-collector.html">Market Data</a>
+            <a class="nav-link" href="roadmap.html">Roadmap</a>
+            <a class="nav-link connect-link" href="http://localhost:3000/api/allegro/login">Polacz Allegro</a>
+          </nav>
+        </header>
+
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">MVP v12.4</span>
+            <h2>Product Hunter: katalog Allegro + import danych rynkowych</h2>
+            <p>Allegro API returns product catalog data. Market prices require imported or external legal data source.</p>
+          </div>
+
+          <form class="hunter-search actions-card" id="catalog-form">
+            <label class="studio-field">
+              <span>Nisza w katalogu</span>
+              <input id="catalog-phrase" type="search" placeholder="Montessori, Organizer, Kosz, Lampka, Pies, Kot, Kuchnia" autocomplete="off" required />
+            </label>
+            <button class="primary-button" type="submit">Szukaj</button>
+          </form>
+        </section>
+
+        <section class="finance-panel" aria-label="Product Catalog Hunter">
+          <div class="finance-toolbar">
+            <div>
+              <span class="eyebrow">Product Catalog Hunter</span>
+              <h2>GET /sale/products?phrase=</h2>
+            </div>
+          </div>
+
+          <div class="auth-card hidden" id="catalog-auth">
+            <div>
+              <strong>Najpierw polacz konto Allegro przez /api/allegro/login</strong>
+              <p>Catalog Hunter korzysta z user OAuth i scope `allegro:api:sale:offers:read`.</p>
+            </div>
+            <a href="http://localhost:3000/api/allegro/login">Polacz Allegro</a>
+          </div>
+
+          <p class="message hidden" id="hunter-message"></p>
+
+          <div class="table-wrap">
+            <table class="catalog-table">
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nazwa produktu</th>
+                  <th>Category ID</th>
+                  <th>Publication status</th>
+                  <th>Product ID</th>
+                  <th>Akcja</th>
+                </tr>
+              </thead>
+              <tbody id="catalog-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="auth-card hidden" id="selected-market-card">
+          <div>
+            <strong>Uzupelniasz dane rynkowe dla:</strong>
+            <p id="selected-market-details">-</p>
+          </div>
+          <a href="listing-studio.html">Listing Studio</a>
+        </section>
+
+        <section class="hero-panel import-hero" id="market-import">
+          <div class="hero-copy">
+            <span class="eyebrow">Market Hunter Import</span>
+            <h2>Analiza rynku z legalnego CSV</h2>
+            <p>Zaimportuj dane z legalnego zrodla rynkowego. CSV musi zawierac: name, competitor_price, seller_count, popularity, min_price, max_price, avg_price, source_url.</p>
+            <p class="market-context-hint hidden" id="market-import-hint">Zaimportuj CSV z cenami konkurencji dla tego produktu.</p>
+          </div>
+          <div class="actions-card">
+            <span>CSV</span>
+            <strong>Market data input</strong>
+            <label class="primary-button file-button">
+              Import CSV
+              <input id="market-csv" type="file" accept=".csv,text/csv" />
+            </label>
+          </div>
+        </section>
+
+        <section class="stats-grid" aria-label="Market Hunter KPI">
+          <article class="stat-card">
+            <span>Imported rows</span>
+            <strong id="market-count">0</strong>
+          </article>
+          <article class="stat-card score-card">
+            <span>Best Opportunity</span>
+            <strong id="market-best-score">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Average price</span>
+            <strong id="market-average-price">0,00 zl</strong>
+          </article>
+          <article class="stat-card">
+            <span>Average competition</span>
+            <strong id="market-average-competition">0</strong>
+          </article>
+        </section>
+
+        <section class="finance-panel" aria-label="Market Hunter Import">
+          <div class="finance-toolbar">
+            <div>
+              <span class="eyebrow">Scores from imported data</span>
+              <h2>Market Hunter results</h2>
+            </div>
+            <div class="controls">
+              <label class="sort-field">
+                <span>Score min</span>
+                <input id="filter-score" type="number" min="0" max="100" step="1" placeholder="0" />
+              </label>
+              <label class="sort-field">
+                <span>Price max</span>
+                <input id="filter-price" type="number" min="0" step="1" placeholder="bez limitu" />
+              </label>
+              <label class="sort-field">
+                <span>Competition max</span>
+                <input id="filter-competition" type="number" min="0" step="1" placeholder="bez limitu" />
+              </label>
+              <label class="sort-field">
+                <span>Sortuj</span>
+                <select id="market-sort">
+                  <option value="opportunity-desc">Opportunity malejaco</option>
+                  <option value="opportunity-asc">Opportunity rosnaco</option>
+                  <option value="avg-price-desc">Avg price malejaco</option>
+                  <option value="avg-price-asc">Avg price rosnaco</option>
+                  <option value="competition-desc">Competition malejaco</option>
+                  <option value="competition-asc">Competition rosnaco</option>
+                  <option value="popularity-desc">Popularity malejaco</option>
+                  <option value="popularity-asc">Popularity rosnaco</option>
+                </select>
+              </label>
+              <button class="secondary-button" id="export-market-csv" type="button">Export results CSV</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="hunter-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Competitor price</th>
+                  <th>Seller count</th>
+                  <th>Popularity</th>
+                  <th>Min price</th>
+                  <th>Max price</th>
+                  <th>Avg price</th>
+                  <th>Competition</th>
+                  <th>Price</th>
+                  <th>Demand</th>
+                  <th>Profit</th>
+                  <th>Opportunity</th>
+                  <th>Recommendation</th>
+                  <th>Source</th>
+                  <th>Akcja</th>
+                </tr>
+              </thead>
+              <tbody id="market-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="product-hunter.js"></script>
+  </body>
+</html>

@@ -4,159 +4,135 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ff5a00" />
-    <title>Allegro Profit AI</title>
+    <title>Dashboard - Allegro Profit AI</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <main class="app">
-      <section class="shell" aria-label="Kalkulator rentownosci Allegro">
+      <section class="shell" aria-label="Allegro Profit AI Dashboard">
         <header class="topbar">
           <div class="brand">
             <div class="brand-icon" aria-hidden="true">A</div>
             <div>
               <p>Allegro Profit AI</p>
-              <h1>Kalkulator rentowności oferty</h1>
+              <h1>Business Dashboard</h1>
             </div>
           </div>
-          <div class="nav-links">
+          <nav class="nav-links" aria-label="Nawigacja">
+            <a class="nav-link active" href="index.html">Dashboard</a>
             <a class="nav-link" href="analiza-produktu.html">Analiza</a>
             <a class="nav-link" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="produkty.html">Produkty</a>
+            <a class="nav-link" href="orders.html">Zamówienia</a>
+            <a class="nav-link" href="finance.html">Finanse</a>
+            <a class="nav-link" href="listing-studio.html">Listing Studio</a>
+            <a class="nav-link" href="product-hunter.html">Product Hunter</a>
+            <a class="nav-link" href="market-data-collector.html">Market Data</a>
             <a class="nav-link" href="roadmap.html">Roadmap</a>
-          </div>
+            <a class="nav-link connect-link" href="http://localhost:3000/api/allegro/login">Połącz Allegro</a>
+          </nav>
         </header>
 
-        <div class="summary-row" aria-label="Najwazniejsze wyniki">
-          <article class="metric main-metric" id="final-card">
-            <span>Zysk netto końcowy</span>
-            <strong id="final-net-profit">0,00 zł</strong>
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">MVP v8</span>
+            <h2>Stan sklepu Allegro na jednym ekranie</h2>
+            <p>Dashboard łączy zamówienia i oferty z backendu OAuth, liczy sprzedaż, aktywne produkty oraz alerty magazynowe.</p>
+          </div>
+
+          <div class="actions-card">
+            <span>Źródła danych</span>
+            <strong>/api/allegro/orders + /api/allegro/offers</strong>
+            <button class="primary-button" id="refresh-dashboard" type="button">Odśwież dashboard</button>
+          </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="KPI sklepu">
+          <article class="kpi-card">
+            <span>Zamówienia razem</span>
+            <strong id="orders-total">0</strong>
           </article>
-          <article class="metric">
-            <span>Przychód</span>
-            <strong id="revenue">0,00 zł</strong>
+          <article class="kpi-card">
+            <span>Sprzedaż razem</span>
+            <strong id="sales-total">0,00 zł</strong>
           </article>
-          <article class="metric">
-            <span>Koszty całkowite</span>
-            <strong id="total-costs">0,00 zł</strong>
+          <article class="kpi-card">
+            <span>Średni koszyk</span>
+            <strong id="average-order">0,00 zł</strong>
           </article>
-        </div>
+          <article class="kpi-card">
+            <span>Aktywne towary</span>
+            <strong id="active-products">0</strong>
+          </article>
+          <article class="kpi-card">
+            <span>Bez stanu</span>
+            <strong id="out-of-stock">0</strong>
+          </article>
+        </section>
 
-        <div class="workspace">
-          <form class="form-card" id="profit-form">
-            <div class="section-title">
-              <h2>Dane oferty</h2>
-              <p>Wpisz wartości brutto dla sprzedaży na Allegro.</p>
+        <section class="status-card hidden" id="status-card">
+          <div>
+            <strong id="status-title">Status</strong>
+            <p id="status-message"></p>
+          </div>
+          <a class="status-action hidden" id="status-action" href="http://localhost:3000/api/allegro/login">Połącz Allegro</a>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="panel" aria-label="Najlepsze produkty">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Produkty</span>
+                <h2>Najlepsze produkty</h2>
+              </div>
+              <a href="produkty.html">Pełna lista</a>
             </div>
-
-            <div class="fields-grid">
-              <label class="field">
-                <span>Cena zakupu</span>
-                <div class="input-box">
-                  <input id="purchase-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
-                  <strong>PLN</strong>
-                </div>
-              </label>
-
-              <label class="field">
-                <span>Cena sprzedaży</span>
-                <div class="input-box">
-                  <input id="sale-price" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
-                  <strong>PLN</strong>
-                </div>
-              </label>
-
-              <label class="field">
-                <span>Koszt dostawy</span>
-                <div class="input-box">
-                  <input id="delivery-cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
-                  <strong>PLN</strong>
-                </div>
-              </label>
-
-              <label class="field">
-                <span>Koszt pakowania</span>
-                <div class="input-box">
-                  <input id="packing-cost" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0,00" />
-                  <strong>PLN</strong>
-                </div>
-              </label>
-
-              <label class="field">
-                <span>Stawka VAT</span>
-                <div class="input-box">
-                  <input id="vat-rate" type="number" inputmode="decimal" min="0" step="0.01" value="23" />
-                  <strong>%</strong>
-                </div>
-              </label>
-
-              <label class="field">
-                <span>Prowizja Allegro</span>
-                <div class="input-box">
-                  <input id="allegro-commission-rate" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" />
-                  <strong>%</strong>
-                </div>
-              </label>
-
-              <label class="field">
-                <span>Koszt Allegro Ads</span>
-                <div class="input-box">
-                  <input id="ads-rate" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" />
-                  <strong>%</strong>
-                </div>
-              </label>
-
-              <fieldset class="toggle-field">
-                <legend>Darmowa dostawa</legend>
-                <div class="segmented" role="radiogroup" aria-label="Darmowa dostawa">
-                  <label>
-                    <input type="radio" name="free-delivery" value="yes" />
-                    <span>Tak</span>
-                  </label>
-                  <label>
-                    <input type="radio" name="free-delivery" value="no" checked />
-                    <span>Nie</span>
-                  </label>
-                </div>
-              </fieldset>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nazwa</th>
+                    <th>Cena</th>
+                    <th>Stan</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="top-products-body"></tbody>
+              </table>
             </div>
-          </form>
+          </section>
 
-          <section class="results-card" aria-label="Szczegoly wyniku">
-            <div class="section-title">
-              <h2>Podsumowanie</h2>
-              <p>Rozbicie prowizji, reklamy, VAT i kosztów.</p>
+          <section class="panel" aria-label="Ostatnie zamówienia">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Sprzedaż</span>
+                <h2>Ostatnie zamówienia</h2>
+              </div>
+              <a href="orders.html">CRM</a>
             </div>
-
-            <div class="results-list">
-              <article class="result">
-                <span>Przychód</span>
-                <strong id="revenue-detail">0,00 zł</strong>
-              </article>
-
-              <article class="result">
-                <span>Koszty całkowite</span>
-                <strong id="total-costs-detail">0,00 zł</strong>
-              </article>
-
-              <article class="result">
-                <span>Prowizja Allegro</span>
-                <strong id="allegro-commission">0,00 zł</strong>
-              </article>
-
-              <article class="result">
-                <span>Koszt reklamy</span>
-                <strong id="ads-cost">0,00 zł</strong>
-              </article>
-
-              <article class="result">
-                <span>VAT</span>
-                <strong id="vat">0,00 zł</strong>
-              </article>
-
-              <article class="result final" id="final-detail-card">
-                <span>Zysk netto końcowy</span>
-                <strong id="final-net-profit-detail">0,00 zł</strong>
-              </article>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Kupujący</th>
+                    <th>Suma</th>
+                    <th>Status płatności</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-orders-body"></tbody>
+              </table>
             </div>
+          </section>
+
+          <section class="panel alerts-panel" aria-label="Alerty">
+            <div class="panel-header">
+              <div>
+                <span class="eyebrow">Ryzyka</span>
+                <h2>Alerty</h2>
+              </div>
+            </div>
+            <div class="alerts-list" id="alerts-list"></div>
           </section>
         </div>
       </section>

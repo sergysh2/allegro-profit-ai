@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Listing Studio - Allegro Profit AI</title>
+    <link rel="stylesheet" href="finance.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="AI Listing Studio Allegro">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Listing Studio</h1>
+            </div>
+          </div>
+          <nav class="nav-links" aria-label="Nawigacja">
+            <a class="nav-link" href="index.html">Dashboard</a>
+            <a class="nav-link" href="analiza-produktu.html">Analiza</a>
+            <a class="nav-link" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="produkty.html">Produkty</a>
+            <a class="nav-link" href="orders.html">Zamowienia</a>
+            <a class="nav-link" href="finance.html">Finanse</a>
+            <a class="nav-link active" href="listing-studio.html">Listing Studio</a>
+            <a class="nav-link" href="product-hunter.html">Product Hunter</a>
+            <a class="nav-link" href="market-data-collector.html">Market Data</a>
+            <a class="nav-link" href="roadmap.html">Roadmap</a>
+            <a class="nav-link connect-link" href="http://localhost:3000/api/allegro/login">Polacz Allegro</a>
+          </nav>
+        </header>
+
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">MVP v11</span>
+            <h2>AI Listing Studio dla nowych produktow</h2>
+            <p>Przygotuj pomysl na nowy produkt, wygeneruj listing Allegro, policz cene sprzedazy i wyeksportuj dane do CSV dla BaseLinker lub Allegro.</p>
+          </div>
+
+          <div class="actions-card">
+            <span>Tryb pracy</span>
+            <strong>Lokalne szablony + kalkulacje</strong>
+            <button class="primary-button" id="generate-listing" type="button">Generuj listing</button>
+          </div>
+        </section>
+
+        <section class="listing-layout">
+          <form class="listing-form finance-panel" id="listing-form">
+            <div class="finance-toolbar">
+              <div>
+                <span class="eyebrow">Nowy produkt</span>
+                <h2>Dane wejsciowe</h2>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <label class="studio-field">
+                <span>Link do dostawcy</span>
+                <input id="supplier-url" name="supplierUrl" type="url" placeholder="https://..." />
+              </label>
+              <label class="studio-field">
+                <span>Nazwa towaru</span>
+                <input id="product-name" name="productName" type="text" placeholder="np. Organizer do szuflady" required />
+              </label>
+              <label class="studio-field">
+                <span>Cena zakupu</span>
+                <input id="purchase-price" name="purchasePrice" type="number" min="0" step="0.01" value="0" />
+              </label>
+              <label class="studio-field">
+                <span>Dostawa</span>
+                <input id="delivery-cost" name="deliveryCost" type="number" min="0" step="0.01" value="0" />
+              </label>
+              <label class="studio-field">
+                <span>Pakowanie</span>
+                <input id="packaging-cost" name="packagingCost" type="number" min="0" step="0.01" value="0" />
+              </label>
+              <label class="studio-field">
+                <span>Prowizja Allegro %</span>
+                <input id="commission-percent" name="commissionPercent" type="number" min="0" step="0.01" value="10" />
+              </label>
+              <label class="studio-field">
+                <span>VAT %</span>
+                <input id="vat-percent" name="vatPercent" type="number" min="0" step="0.01" value="23" />
+              </label>
+              <label class="studio-field">
+                <span>Docelowa marza %</span>
+                <input id="desired-margin" name="desiredMarginPercent" type="number" min="0" max="95" step="0.01" value="25" />
+              </label>
+              <label class="studio-field">
+                <span>Foto URL</span>
+                <input id="image-url" name="imageUrl" type="url" placeholder="https://..." />
+              </label>
+              <label class="studio-field">
+                <span>Kategoria</span>
+                <input id="category" name="category" type="text" placeholder="np. Dom i ogrod" />
+              </label>
+              <label class="studio-field wide">
+                <span>Slowa kluczowe</span>
+                <input id="keywords" name="keywords" type="text" placeholder="organizer, porzadek, szuflada" />
+              </label>
+              <label class="studio-field">
+                <span>Ilosc</span>
+                <input id="quantity" name="quantity" type="number" min="0" step="1" value="1" />
+              </label>
+            </div>
+
+            <div class="button-row">
+              <button class="primary-button" type="submit">Generuj listing</button>
+              <button class="secondary-button" id="save-idea" type="button">Zapisz pomysl</button>
+              <button class="secondary-button" id="export-baselinker" type="button">Eksport CSV BaseLinker</button>
+              <button class="secondary-button" id="export-allegro" type="button">Eksport CSV Allegro</button>
+            </div>
+            <p class="message hidden" id="studio-message"></p>
+          </form>
+
+          <section class="finance-panel result-panel" aria-label="Wygenerowany listing">
+            <div class="finance-toolbar">
+              <div>
+                <span class="eyebrow">Generator listingu</span>
+                <h2>Wynik AI</h2>
+              </div>
+            </div>
+
+            <div class="result-grid">
+              <article>
+                <span>Nazwa Allegro</span>
+                <strong id="result-name">-</strong>
+              </article>
+              <article>
+                <span>SKU</span>
+                <strong id="result-sku">-</strong>
+              </article>
+              <article>
+                <span>Cena sprzedazy</span>
+                <strong id="result-price">0,00 zl</strong>
+              </article>
+              <article>
+                <span>Zysk netto</span>
+                <strong id="result-profit">0,00 zl</strong>
+              </article>
+              <article>
+                <span>ROI</span>
+                <strong id="result-roi">0,00%</strong>
+              </article>
+              <article>
+                <span>Marza</span>
+                <strong id="result-margin">0,00%</strong>
+              </article>
+              <article>
+                <span>Product Score</span>
+                <strong id="result-score">0</strong>
+              </article>
+              <article>
+                <span>AI recommendation</span>
+                <strong id="result-recommendation">-</strong>
+              </article>
+            </div>
+
+            <div class="copy-block">
+              <h3>Krotki opis</h3>
+              <p id="result-short">Wypelnij formularz i wygeneruj listing.</p>
+            </div>
+            <div class="copy-block">
+              <h3>Bullet points</h3>
+              <ul id="result-bullets"></ul>
+            </div>
+            <div class="copy-block">
+              <h3>Dlugi opis</h3>
+              <p id="result-long">-</p>
+            </div>
+          </section>
+        </section>
+
+        <section class="finance-panel saved-panel" aria-label="Zapisane pomysly produktow">
+          <div class="finance-toolbar">
+            <div>
+              <span class="eyebrow">LocalStorage</span>
+              <h2>Zapisane pomysly produktow</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="ideas-table">
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Nazwa</th>
+                  <th>Cena</th>
+                  <th>Ilosc</th>
+                  <th>Zysk</th>
+                  <th>ROI</th>
+                  <th>Marza</th>
+                  <th>Score</th>
+                  <th>Rekomendacja</th>
+                  <th>Market avg price</th>
+                  <th>Seller count</th>
+                  <th>Market score</th>
+                  <th>Market recommendation</th>
+                  <th>Akcja</th>
+                </tr>
+              </thead>
+              <tbody id="ideas-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="listing-studio.js?v=1252"></script>
+  </body>
+</html>

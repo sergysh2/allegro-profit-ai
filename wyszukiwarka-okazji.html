@@ -22,15 +22,45 @@
             <a class="nav-link" href="index.html">Kalkulator</a>
             <a class="nav-link" href="analiza-produktu.html">Analiza</a>
             <a class="nav-link active" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="produkty.html">Produkty</a>
+            <a class="nav-link" href="orders.html">Zamówienia</a>
+            <a class="nav-link" href="finance.html">Finanse</a>
+            <a class="nav-link" href="listing-studio.html">Listing Studio</a>
+            <a class="nav-link" href="product-hunter.html">Product Hunter</a>
+            <a class="nav-link" href="market-data-collector.html">Market Data</a>
             <a class="nav-link" href="roadmap.html">Roadmap</a>
+            <a class="nav-link connect-link" href="http://localhost:3000/api/allegro/login">Połącz Allegro</a>
           </nav>
         </header>
 
         <section class="hero-panel">
           <div class="hero-copy">
-            <span class="eyebrow">MVP v3 demo</span>
+            <span class="eyebrow">MVP v4</span>
             <h2>Znajdź produkty z najlepszym potencjałem sprzedaży na Allegro</h2>
-            <p>Ustaw podstawowe filtry i uruchom demo-wyszukiwanie. Wyniki są lokalne, bez połączenia z API i bez pobierania danych z Allegro.</p>
+            <p>Użyj realnego wyszukiwania Allegro przez backend OAuth albo zostaw demo jako fallback do testowania filtrów bez API.</p>
+          </div>
+
+          <form class="real-search-form" id="real-search-form">
+            <div class="mode-header">
+              <span>Realne dane Allegro</span>
+              <strong>Backend OAuth</strong>
+            </div>
+            <label class="field full">
+              <span>Phrase</span>
+              <div class="search-row">
+                <input id="allegro-phrase" type="search" placeholder="np. zabawka edukacyjna" autocomplete="off" />
+                <button class="primary-button" type="submit">Szukaj w Allegro</button>
+              </div>
+            </label>
+            <p class="hint">Najpierw połącz konto Allegro przez backend OAuth, a potem wyszukaj produkty po frazie.</p>
+          </form>
+        </section>
+
+        <section class="demo-panel">
+          <div class="demo-copy">
+            <span class="eyebrow">Fallback demo</span>
+            <h2>Demo wyszukiwarki okazji</h2>
+            <p>Te wyniki są lokalne i działają bez backendu. Użyj ich, gdy API Allegro nie jest jeszcze połączone.</p>
           </div>
 
           <form class="finder-form" id="finder-form">
@@ -81,6 +111,37 @@
 
             <button class="primary-button" type="submit">Szukaj okazji</button>
           </form>
+        </section>
+
+        <section class="results-panel hidden" id="allegro-results-panel" aria-label="Realne wyniki Allegro">
+          <div class="results-header">
+            <div>
+              <span class="eyebrow">Realne dane Allegro</span>
+              <h2>Wyniki z Allegro API</h2>
+            </div>
+            <div class="counter">
+              <span>Znaleziono</span>
+              <strong id="allegro-result-count">0</strong>
+            </div>
+          </div>
+
+          <p class="api-message hidden" id="allegro-message"></p>
+
+          <div class="table-wrap">
+            <table class="allegro-table">
+              <thead>
+                <tr>
+                  <th>Nazwa towaru</th>
+                  <th>Cena</th>
+                  <th>Waluta</th>
+                  <th>ID oferty</th>
+                  <th>Link Allegro</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="allegro-results-body"></tbody>
+            </table>
+          </div>
         </section>
 
         <section class="results-panel hidden" id="results-panel" aria-label="Wyniki wyszukiwania okazji">

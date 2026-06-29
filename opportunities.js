@@ -1,4 +1,6 @@
 const form = document.querySelector('#finder-form');
+const realSearchForm = document.querySelector('#real-search-form');
+const allegroPhrase = document.querySelector('#allegro-phrase');
 const category = document.querySelector('#category');
 const priceFrom = document.querySelector('#price-from');
 const priceTo = document.querySelector('#price-to');
@@ -8,6 +10,10 @@ const resultsPanel = document.querySelector('#results-panel');
 const resultsBody = document.querySelector('#results-body');
 const resultCount = document.querySelector('#result-count');
 const emptyState = document.querySelector('#empty-state');
+const allegroResultsPanel = document.querySelector('#allegro-results-panel');
+const allegroResultsBody = document.querySelector('#allegro-results-body');
+const allegroResultCount = document.querySelector('#allegro-result-count');
+const allegroMessage = document.querySelector('#allegro-message');
 
 const products = [
   {
@@ -167,6 +173,142 @@ function renderRows(items) {
     .join('');
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function getOffersFromAllegroResponse(data) {
+  const promoted = data?.items?.promoted || [];
+  const regular = data?.items?.regular || [];
+
+  if (Array.isArray(data?.offers)) {
+    return data.offers;
+  }
+
+  return [...promoted, ...regular];
+}
+
+function getOfferPrice(offer) {
+  return offer?.sellingMode?.price || offer?.price || {};
+}
+
+function getOfferLink(offer) {
+  if (offer?.url) {
+    return offer.url;
+  }
+
+  if (offer?.external?.url) {
+    return offer.external.url;
+  }
+
+  if (offer?.id) {
+    return `https://allegro.pl/oferta/${offer.id}`;
+  }
+
+  return '';
+}
+
+function showAllegroMessage(message, type = 'info') {
+  allegroMessage.textContent = message;
+  allegroMessage.classList.toggle('error', type === 'error');
+  allegroMessage.classList.remove('hidden');
+}
+
+function clearAllegroMessage() {
+  allegroMessage.textContent = '';
+  allegroMessage.classList.remove('error');
+  allegroMessage.classList.add('hidden');
+}
+
+function renderAllegroRows(offers) {
+  allegroResultsBody.innerHTML = offers
+    .map((offer) => {
+      const price = getOfferPrice(offer);
+      const link = getOfferLink(offer);
+
+      return `
+        <tr>
+          <td class="product-name">${escapeHtml(offer.name || 'Brak nazwy')}</td>
+          <td>${escapeHtml(price.amount || '-')}</td>
+          <td>${escapeHtml(price.currency || '-')}</td>
+          <td>${escapeHtml(offer.id || '-')}</td>
+          <td>${
+            link
+              ? `<a class="offer-link" href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Otwórz</a>`
+              : '-'
+          }</td>
+          <td><span class="badge good">OK</span></td>
+        </tr>
+      `;
+    })
+    .join('');
+}
+
+function renderAllegroError(status, message) {
+  allegroResultsBody.innerHTML = `
+    <tr>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td><span class="badge danger">${escapeHtml(status)}</span> ${escapeHtml(message)}</td>
+    </tr>
+  `;
+  allegroResultCount.textContent = '0';
+  allegroResultsPanel.classList.remove('hidden');
+}
+
+async function searchAllegro() {
+  const phrase = allegroPhrase.value.trim();
+
+  clearAllegroMessage();
+  allegroResultsPanel.classList.remove('hidden');
+  allegroResultCount.textContent = '0';
+  allegroResultsBody.innerHTML = '';
+
+  if (!phrase) {
+    showAllegroMessage('Wpisz frazę wyszukiwania Allegro.', 'error');
+    renderAllegroError('Brak frazy', 'Nie można wyszukać pustej frazy.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/allegro/search?phrase=${encodeURIComponent(phrase)}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = data?.message || data?.error || 'Nie udało się pobrać wyników z Allegro API.';
+      const authError = response.status === 401 || data?.error === 'not_authenticated';
+
+      showAllegroMessage(
+        authError
+          ? 'Najpierw połącz konto Allegro przez backend OAuth.'
+          : `Allegro API zwróciło błąd: ${errorMessage}`,
+        'error',
+      );
+      renderAllegroError(`HTTP ${response.status}`, errorMessage);
+      return;
+    }
+
+    const offers = getOffersFromAllegroResponse(data);
+    renderAllegroRows(offers);
+    allegroResultCount.textContent = String(offers.length);
+
+    if (offers.length === 0) {
+      showAllegroMessage('Allegro API nie zwróciło ofert dla tej frazy.');
+    }
+  } catch (error) {
+    showAllegroMessage('Najpierw połącz konto Allegro przez backend OAuth.', 'error');
+    renderAllegroError('Backend offline', error.message);
+  }
+}
+
 function searchOpportunities() {
   const selectedCategory = category.value;
   const from = readNumber(priceFrom, 0);
@@ -191,4 +333,9 @@ function searchOpportunities() {
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   searchOpportunities();
+});
+
+realSearchForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  await searchAllegro();
 });

@@ -19,21 +19,28 @@
             </div>
           </div>
           <nav class="nav" aria-label="Nawigacja">
-            <a href="index.html">Kalkulator</a>
+            <a href="index.html">Dashboard</a>
             <a href="analiza-produktu.html">Analiza</a>
             <a href="wyszukiwarka-okazji.html">Okazje</a>
+            <a href="produkty.html">Produkty</a>
+            <a href="orders.html">Zamowienia</a>
+            <a href="finance.html">Finanse</a>
+            <a href="listing-studio.html">Listing Studio</a>
+            <a href="product-hunter.html">Product Hunter</a>
+            <a href="market-data-collector.html">Market Data</a>
+            <a class="connect-link" href="http://localhost:3000/api/allegro/login">Polacz Allegro</a>
           </nav>
         </header>
 
         <section class="hero">
           <div>
             <span class="eyebrow">Plan rozwoju</span>
-            <h2>Od prostego kalkulatora do platformy wyboru najbardziej zyskownych produktów.</h2>
+            <h2>Od kalkulatora zysku do platformy wyboru najbardziej zyskownych produktow.</h2>
           </div>
           <div class="hero-card">
             <span>Status</span>
-            <strong>MVP v3 demo gotowe</strong>
-            <p>Wyszukiwarka okazji działa jako lokalne demo z filtrami i rankingiem potencjału produktów.</p>
+            <strong>MVP v13 Market Data Collector gotowe</strong>
+            <p>Collector przygotowuje legalne dane CSV, dopasowuje produkty i zasila Product Hunter oraz Listing Studio.</p>
           </div>
         </section>
 
@@ -43,7 +50,7 @@
             <div class="stage-content">
               <div class="stage-heading">
                 <h3>MVP v1</h3>
-                <span>Gotowo</span>
+                <span>Gotowe</span>
               </div>
               <ul>
                 <li>Kalkulator zysku</li>
@@ -57,16 +64,16 @@
             <div class="stage-content">
               <div class="stage-heading">
                 <h3>MVP v2</h3>
-                <span>Częściowo gotowe</span>
+                <span>Czesciowo gotowe</span>
               </div>
               <ul>
                 <li>Demo analiza produktu po linku Allegro</li>
-                <li>Pobieranie danych z linku Allegro</li>
+                <li>Pobieranie danych z linku Allegro - plan</li>
               </ul>
             </div>
           </article>
 
-          <article class="stage done">
+          <article class="stage active">
             <div class="stage-marker">3</div>
             <div class="stage-content">
               <div class="stage-heading">
@@ -74,34 +81,153 @@
                 <span>Wyszukiwarka demo gotowe</span>
               </div>
               <ul>
-                <li>Wyszukiwarka okazji demo - gotowe</li>
+                <li>Wyszukiwarka okazji demo</li>
                 <li>Analiza konkurencji - plan</li>
               </ul>
             </div>
           </article>
 
-          <article class="stage">
+          <article class="stage active">
             <div class="stage-marker">4</div>
             <div class="stage-content">
               <div class="stage-heading">
                 <h3>MVP v4</h3>
-                <span>Plan</span>
+                <span>Realny search Allegro gotowe</span>
               </div>
               <ul>
-                <li>Import Excel od dostawcy</li>
+                <li>Tryb Realne dane Allegro</li>
+                <li>Search przez backend OAuth</li>
               </ul>
             </div>
           </article>
 
-          <article class="stage">
+          <article class="stage active">
             <div class="stage-marker">5</div>
             <div class="stage-content">
               <div class="stage-heading">
                 <h3>MVP v5</h3>
-                <span>Plan</span>
+                <span>Orders dashboard gotowe</span>
               </div>
               <ul>
-                <li>Wyszukiwanie najbardziej zyskownych produktów</li>
+                <li>Endpoint /api/allegro/orders</li>
+                <li>Tabela zamowien bez danych kontaktowych</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">6</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v6</h3>
+                <span>Orders CRM table gotowe</span>
+              </div>
+              <ul>
+                <li>KPI zamowien</li>
+                <li>Wyszukiwanie po ID i loginie kupujacego</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">7</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v7</h3>
+                <span>Products Dashboard gotowe</span>
+              </div>
+              <ul>
+                <li>Endpoint /api/allegro/offers</li>
+                <li>Produkty z KPI, wyszukiwaniem i sortowaniem</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">8</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v8</h3>
+                <span>Main Dashboard gotowe</span>
+              </div>
+              <ul>
+                <li>KPI sklepu Allegro</li>
+                <li>Najlepsze produkty, ostatnie zamowienia i alerty</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">9</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v9</h3>
+                <span>Finance AI gotowe</span>
+              </div>
+              <ul>
+                <li>Rentownosc produktow Allegro</li>
+                <li>LocalStorage kosztow per offer id</li>
+                <li>KPI finansowe, wyszukiwanie i sortowanie</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">10</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v10</h3>
+                <span>AI Opportunity Engine gotowe</span>
+              </div>
+              <ul>
+                <li>Opportunity Score 0-100</li>
+                <li>Automatyczne rekomendacje zakupowe</li>
+                <li>KPI score, sortowanie i filtry ryzyka</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">11</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v11</h3>
+                <span>AI Listing Studio gotowe</span>
+              </div>
+              <ul>
+                <li>Generator listingu Allegro</li>
+                <li>Product Score i rekomendacje AI</li>
+                <li>LocalStorage pomyslow oraz eksport CSV BaseLinker i Allegro</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">12</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v12</h3>
+                <span>Catalog + Import + bridge gotowe</span>
+              </div>
+              <ul>
+                <li>Product Catalog Hunter na GET /sale/products</li>
+                <li>Market Hunter Import CSV bez fake market data</li>
+                <li>Uzupelnij dane rynkowe i zapisz analize do Listing Studio</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">13</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v13</h3>
+                <span>Market Data Collector gotowe</span>
+              </div>
+              <ul>
+                <li>Import supplier CSV i market CSV</li>
+                <li>Auto-match po SKU, EAN i podobnej nazwie</li>
+                <li>Export Product Hunter CSV i Send best products to Listing Studio</li>
               </ul>
             </div>
           </article>

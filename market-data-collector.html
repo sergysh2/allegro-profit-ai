@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff5a00" />
+    <title>Market Data - Allegro Profit AI</title>
+    <link rel="stylesheet" href="finance.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="shell" aria-label="Market Data Collector">
+        <header class="topbar">
+          <div class="brand">
+            <div class="brand-icon" aria-hidden="true">A</div>
+            <div>
+              <p>Allegro Profit AI</p>
+              <h1>Market Data</h1>
+            </div>
+          </div>
+          <nav class="nav-links" aria-label="Nawigacja">
+            <a class="nav-link" href="index.html">Dashboard</a>
+            <a class="nav-link" href="analiza-produktu.html">Analiza</a>
+            <a class="nav-link" href="wyszukiwarka-okazji.html">Okazje</a>
+            <a class="nav-link" href="produkty.html">Produkty</a>
+            <a class="nav-link" href="orders.html">Zamowienia</a>
+            <a class="nav-link" href="finance.html">Finanse</a>
+            <a class="nav-link" href="listing-studio.html">Listing Studio</a>
+            <a class="nav-link" href="product-hunter.html">Product Hunter</a>
+            <a class="nav-link active" href="market-data-collector.html">Market Data</a>
+            <a class="nav-link" href="roadmap.html">Roadmap</a>
+            <a class="nav-link connect-link" href="http://localhost:3000/api/allegro/login">Polacz Allegro</a>
+          </nav>
+        </header>
+
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="eyebrow">MVP v13</span>
+            <h2>Market Data Collector</h2>
+            <p>Przygotuj legalne dane rynkowe dla Product Hunter bez scrapingu Allegro HTML i bez obchodzenia ograniczen API.</p>
+          </div>
+          <div class="actions-card">
+            <span>Legalne zrodla</span>
+            <strong>Supplier CSV, BaseLinker CSV, manual CSV, data-provider files</strong>
+          </div>
+        </section>
+
+        <section class="stats-grid" aria-label="Market Data KPI">
+          <article class="stat-card">
+            <span>Supplier rows</span>
+            <strong id="supplier-count">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>Market rows</span>
+            <strong id="market-source-count">0</strong>
+          </article>
+          <article class="stat-card score-card">
+            <span>Matched products</span>
+            <strong id="matched-count">0</strong>
+          </article>
+          <article class="stat-card">
+            <span>BUY recommendations</span>
+            <strong id="buy-count">0</strong>
+          </article>
+        </section>
+
+        <section class="finance-panel">
+          <div class="finance-toolbar">
+            <div>
+              <span class="eyebrow">Imports</span>
+              <h2>Legal data inputs</h2>
+            </div>
+            <div class="controls">
+              <label class="primary-button file-button">
+                Import supplier CSV
+                <input id="supplier-file" type="file" accept=".csv,.txt,text/csv" />
+              </label>
+              <label class="primary-button file-button">
+                Import market CSV
+                <input id="market-file" type="file" accept=".csv,.txt,text/csv" />
+              </label>
+              <button class="secondary-button" id="auto-match" type="button">Auto match</button>
+              <button class="secondary-button" id="export-hunter-csv" type="button">Export Product Hunter CSV</button>
+              <button class="secondary-button" id="send-best" type="button">Send best products to Listing Studio</button>
+            </div>
+          </div>
+          <p class="message hidden" id="collector-message"></p>
+        </section>
+
+        <section class="finance-panel" aria-label="Market Data Collector table">
+          <div class="finance-toolbar">
+            <div>
+              <span class="eyebrow">Collector</span>
+              <h2>Matched market opportunities</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="collector-table">
+              <thead>
+                <tr>
+                  <th>Supplier product</th>
+                  <th>Purchase price</th>
+                  <th>Stock</th>
+                  <th>Market avg price</th>
+                  <th>Seller count</th>
+                  <th>Popularity</th>
+                  <th>Estimated margin</th>
+                  <th>Opportunity score</th>
+                  <th>Recommendation</th>
+                </tr>
+              </thead>
+              <tbody id="collector-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="market-data-collector.js"></script>
+  </body>
+</html>

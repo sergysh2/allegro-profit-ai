@@ -45,8 +45,8 @@ button {
 .topbar,
 .brand,
 .nav-links,
-.panel-header,
-.status-card {
+.orders-header,
+.orders-toolbar {
   display: flex;
 }
 
@@ -78,8 +78,8 @@ button {
 
 .brand p,
 .eyebrow,
-.actions-card span,
-.kpi-card span {
+.counter span,
+.actions-card span {
   margin: 0;
   color: var(--orange);
   font-size: 0.78rem;
@@ -87,14 +87,14 @@ button {
   text-transform: uppercase;
 }
 
-.actions-card span,
-.kpi-card span {
+.counter span,
+.actions-card span {
   color: var(--muted);
 }
 
 .brand h1,
 .hero-copy h2,
-.panel-header h2 {
+.orders-header h2 {
   margin: 0;
   letter-spacing: 0;
 }
@@ -138,13 +138,48 @@ button {
 }
 
 .hero-panel,
-.kpi-card,
-.panel,
-.status-card {
+.stats-grid,
+.orders-panel {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 18px 45px rgba(20, 28, 40, 0.08);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.stat-card {
+  min-height: 112px;
+  padding: 19px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 45px rgba(20, 28, 40, 0.08);
+}
+
+.stat-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--ink);
+  font-size: clamp(1.45rem, 3vw, 2.15rem);
+  line-height: 1.04;
+  overflow-wrap: anywhere;
 }
 
 .hero-panel {
@@ -162,13 +197,13 @@ button {
 }
 
 .hero-copy h2 {
-  max-width: 780px;
+  max-width: 720px;
   font-size: clamp(1.55rem, 3.6vw, 3rem);
   line-height: 1.02;
 }
 
 .hero-copy p {
-  max-width: 700px;
+  max-width: 680px;
   margin: 0;
   color: var(--muted);
   font-size: 1rem;
@@ -207,60 +242,82 @@ button {
   transform: translateY(-1px);
 }
 
-.kpi-grid {
+.orders-panel {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 16px;
+  padding: 22px;
 }
 
-.kpi-card {
-  min-height: 112px;
-  padding: 18px;
+.orders-toolbar {
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
 }
 
-.kpi-card strong {
-  display: block;
-  margin-top: 12px;
+.orders-toolbar h2 {
+  margin-top: 6px;
+  font-size: clamp(1.3rem, 3vw, 2rem);
+}
+
+.search-field {
+  display: grid;
+  gap: 7px;
+  width: min(420px, 100%);
+}
+
+.search-field span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.search-field input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: 0;
+  padding: 0 14px;
   color: var(--ink);
-  font-size: clamp(1.3rem, 2.6vw, 1.95rem);
-  line-height: 1.04;
-  overflow-wrap: anywhere;
+  background: #fff;
+  font: inherit;
+  font-weight: 720;
 }
 
-.status-card {
+.search-field input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.12);
+}
+
+.auth-card {
+  display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-bottom: 14px;
   padding: 16px;
-  border-color: rgba(182, 106, 0, 0.32);
-  color: #684100;
-  background: var(--amber-soft);
+  border: 1px solid rgba(255, 90, 0, 0.28);
+  border-radius: 8px;
+  background: var(--orange-soft);
 }
 
-.status-card.error {
-  border-color: rgba(199, 54, 50, 0.32);
-  color: #8f211d;
-  background: var(--red-soft);
-}
-
-.status-card.hidden,
-.status-action.hidden {
+.auth-card.hidden {
   display: none;
 }
 
-.status-card strong {
+.auth-card strong {
   display: block;
   color: var(--ink);
+  font-size: 1rem;
 }
 
-.status-card p {
+.auth-card p {
   margin: 6px 0 0;
+  color: #5b4638;
   line-height: 1.45;
 }
 
-.status-action {
+.auth-card a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -275,38 +332,25 @@ button {
   white-space: nowrap;
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
+.message {
+  margin: 0;
+  padding: 15px 16px;
+  border: 1px solid rgba(182, 106, 0, 0.32);
+  border-radius: 8px;
+  color: #684100;
+  background: var(--amber-soft);
+  line-height: 1.5;
+  font-weight: 720;
 }
 
-.panel {
-  display: grid;
-  gap: 16px;
-  min-width: 0;
-  padding: 22px;
+.message.error {
+  border-color: rgba(199, 54, 50, 0.32);
+  color: #8f211d;
+  background: var(--red-soft);
 }
 
-.alerts-panel {
-  grid-column: 1 / -1;
-}
-
-.panel-header {
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.panel-header h2 {
-  margin-top: 6px;
-  font-size: clamp(1.25rem, 2.5vw, 1.8rem);
-}
-
-.panel-header a {
-  color: var(--orange);
-  font-weight: 850;
-  text-decoration: none;
+.message.hidden {
+  display: none;
 }
 
 .table-wrap {
@@ -317,7 +361,7 @@ button {
 
 table {
   width: 100%;
-  min-width: 560px;
+  min-width: 1040px;
   border-collapse: collapse;
   background: #fff;
 }
@@ -348,7 +392,7 @@ tbody tr:last-child td {
   border-bottom: 0;
 }
 
-.item-name {
+.order-id {
   color: var(--ink);
   font-weight: 850;
 }
@@ -376,40 +420,9 @@ tbody tr:last-child td {
   background: var(--red-soft);
 }
 
-.alerts-list {
-  display: grid;
-  gap: 10px;
-}
-
-.alert-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  min-height: 58px;
-  padding: 13px 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfcfd;
-}
-
-.alert-item strong {
-  color: var(--ink);
-}
-
-.alert-item span {
-  color: var(--muted);
-  font-size: 0.9rem;
-  font-weight: 760;
-}
-
-@media (max-width: 1080px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .dashboard-grid,
-  .hero-panel {
+@media (max-width: 900px) {
+  .hero-panel,
+  .stats-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -420,9 +433,8 @@ tbody tr:last-child td {
   }
 
   .topbar,
-  .status-card,
-  .panel-header,
-  .alert-item {
+  .orders-toolbar,
+  .auth-card {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -438,15 +450,12 @@ tbody tr:last-child td {
   }
 
   .hero-panel,
-  .panel {
+  .orders-panel {
     padding: 16px;
   }
 
-  .kpi-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .status-action {
+  .search-field,
+  .auth-card a {
     width: 100%;
   }
 }
