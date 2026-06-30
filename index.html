@@ -78,6 +78,42 @@
           <a class="status-action hidden" id="status-action" href="http://localhost:3000/api/allegro/login">Połącz Allegro</a>
         </section>
 
+        <section class="panel" aria-label="Allegro Live Data">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">MVP v18</span>
+              <h2>Allegro Live Data</h2>
+            </div>
+            <button class="primary-button" id="refresh-live-data" type="button">Refresh Allegro data</button>
+          </div>
+          <section class="kpi-grid" aria-label="Allegro live KPI">
+            <article class="kpi-card">
+              <span>Status konta</span>
+              <strong id="live-status">Nie sprawdzono</strong>
+            </article>
+            <article class="kpi-card">
+              <span>Login / email / firma</span>
+              <strong id="live-account">-</strong>
+            </article>
+            <article class="kpi-card">
+              <span>Aktywne ogloszenia</span>
+              <strong id="live-active-offers">0</strong>
+            </article>
+            <article class="kpi-card">
+              <span>Zamowienia</span>
+              <strong id="live-orders-count">0</strong>
+            </article>
+            <article class="kpi-card">
+              <span>Obrot</span>
+              <strong id="live-revenue">0,00 zl</strong>
+            </article>
+            <article class="kpi-card">
+              <span>Sredni koszyk</span>
+              <strong id="live-average-order">0,00 zl</strong>
+            </article>
+          </section>
+        </section>
+
         <div class="dashboard-grid">
           <section class="panel" aria-label="Najlepsze produkty">
             <div class="panel-header">
@@ -138,6 +174,7 @@
       </section>
     </main>
 
-    <script src="script.js"></script>
+    <script src="allegro-live.js?v=1800"></script>
+    <script src="script.js?v=1800"></script>
   </body>
 </html>

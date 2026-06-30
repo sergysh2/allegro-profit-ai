@@ -356,6 +356,121 @@ function normalizeOffer(offer) {
   };
 }
 
+function normalizeCategoryPath(category) {
+  const path = category?.path;
+  if (!Array.isArray(path)) return [];
+  return path
+    .map((item) => ({
+      id: item?.id || null,
+      name: item?.name || null,
+    }))
+    .filter((item) => item.id || item.name);
+}
+
+function normalizeProduct(product) {
+  const images = Array.isArray(product?.images) ? product.images : [];
+  return {
+    id: product?.id || null,
+    name: product?.name || null,
+    categoryId: product?.category?.id || null,
+    categoryPath: normalizeCategoryPath(product?.category),
+    image: images[0]?.url || images[0] || null,
+    images,
+    publicationStatus: product?.publication?.status || product?.publicationStatus || null,
+    source: 'Allegro /sale/products',
+  };
+}
+
+async function searchAllegroProducts(phrase) {
+  const result = await callAllegro(`/sale/products?phrase=${encodeURIComponent(phrase)}&language=pl-PL`);
+
+  if (result.statusCode < 200 || result.statusCode >= 300) {
+    return result;
+  }
+
+  const products = Array.isArray(result.data?.products) ? result.data.products.map(normalizeProduct) : [];
+  return {
+    statusCode: result.statusCode,
+    data: {
+      products,
+      count: products.length,
+      source: 'Allegro /sale/products',
+      note: 'Allegro product catalog does not provide market price data.',
+      rawTotalCount: result.data?.totalCount ?? result.data?.count ?? products.length,
+    },
+  };
+}
+
+function getOrderTotal(order) {
+  const total = order?.summary?.totalToPay || order?.payment?.paidAmount || order?.payment?.amount || {};
+  return {
+    amount: Number(total?.amount || 0),
+    currency: total?.currency || 'PLN',
+  };
+}
+
+function getLineItemPrice(lineItem) {
+  const price = lineItem?.price || lineItem?.offer?.price || {};
+  return Number(price?.amount || 0);
+}
+
+function summarizeOrders(orders) {
+  const productMap = new Map();
+  let totalRevenue = 0;
+  let currency = 'PLN';
+
+  for (const order of orders) {
+    const total = getOrderTotal(order);
+    totalRevenue += total.amount;
+    currency = total.currency || currency;
+
+    const lineItems = Array.isArray(order?.lineItems) ? order.lineItems : [];
+    for (const lineItem of lineItems) {
+      const name = lineItem?.offer?.name || lineItem?.offer?.external?.id || 'Unknown product';
+      const quantity = Number(lineItem?.quantity || 0);
+      const lineRevenue = getLineItemPrice(lineItem) * quantity;
+      const current = productMap.get(name) || {
+        productName: name,
+        soldQuantity: 0,
+        revenue: 0,
+        averageSalePrice: 0,
+      };
+      current.soldQuantity += quantity;
+      current.revenue += lineRevenue;
+      current.averageSalePrice = current.soldQuantity > 0 ? current.revenue / current.soldQuantity : 0;
+      productMap.set(name, current);
+    }
+  }
+
+  const soldQuantityByProductName = [...productMap.values()].sort((a, b) => b.soldQuantity - a.soldQuantity);
+
+  return {
+    totalOrders: orders.length,
+    totalRevenue: Number(totalRevenue.toFixed(2)),
+    currency,
+    averageOrderValue: orders.length ? Number((totalRevenue / orders.length).toFixed(2)) : 0,
+    soldQuantityByProductName: soldQuantityByProductName.map((item) => ({
+      ...item,
+      revenue: Number(item.revenue.toFixed(2)),
+      averageSalePrice: Number(item.averageSalePrice.toFixed(2)),
+    })),
+  };
+}
+
+async function getOrdersSummary() {
+  const result = await callAllegro('/order/checkout-forms');
+
+  if (result.statusCode < 200 || result.statusCode >= 300) {
+    return result;
+  }
+
+  const orders = Array.isArray(result.data?.checkoutForms) ? result.data.checkoutForms : [];
+  return {
+    statusCode: result.statusCode,
+    data: summarizeOrders(orders),
+  };
+}
+
 async function getSellerOffers() {
   const result = await callAllegro('/sale/offers?limit=100&offset=0');
 
@@ -393,7 +508,16 @@ function getAiSystemPrompt() {
     'Styl ma byc profesjonalny, sprzedazowy i konkretny, ale bez obietnic, ktorych nie da sie udowodnic.',
     'Uwzgledniasz nazwe produktu, cene zakupu, VAT, docelowa marze, kategorie, slowa kluczowe, ilosc, koszt pakowania, koszt dostawy i reklame.',
     'Nie wymyslaj certyfikatow, gwarancji, materialow, parametrow technicznych ani zgodnosci, jesli nie wynikaja z danych wejsciowych.',
-    'Jesli marketData jest dostepne, wykorzystaj je do oceny ceny, konkurencji, pozycji rynkowej i slow kluczowych.',
+    'Jesli marketData jest dostepne, wszystkie pola marketInsight musza wynikac wylacznie z marketData.',
+    'productCatalogData z Allegro /sale/products moze byc uzyte do nazwy, product id, category id, category path, zdjecia i publication status.',
+    'productCatalogData nie zawiera cen rynkowych. Nigdy nie wyliczaj market price, seller count ani competition z productCatalogData.',
+    'sellerReality pochodzi z wlasnych zamowien sprzedawcy i moze byc uzyte do oceny czy produkt juz sprzedawal sie w sklepie.',
+    'Jesli marketData jest dostepne, uwzglednij marketData takze w title, bulletPoints, longDescription i seoKeywords: uzyj nazwy rynkowej, zakresu cen, popularnosci, liczby sprzedawcow i notatek jako kontekstu, bez wymyslania danych spoza marketData.',
+    'Recommended Price oblicz na podstawie marketData.avgPrice, marketData.minPrice, marketData.maxPrice, marketData.competitorPrice i marketData.sellerCount. Przy wysokiej konkurencji rekomenduj cene blisko avgPrice lub lekko ponizej, przy niskiej konkurencji mozna byc blizej maxPrice.',
+    'Competition Level okresl na podstawie marketData.sellerCount: 0-10 niska, 11-30 srednia, powyzej 30 wysoka.',
+    'Market Position okresl przez porownanie rekomendowanej ceny do min/avg/max price.',
+    'Pricing Advice musi odnosic sie do avg/min/max price i sellerCount.',
+    'Keyword Advice musi odnosic sie do marketData.name, keywords i marketData.notes.',
     'Jesli marketData nie jest dostepne, marketInsight ma jasno powiedziec, ze dane rynkowe nie sa podlaczone.',
     'Odpowiadasz wylacznie poprawnym JSON bez markdown.',
     'JSON musi miec dokladnie pola: title, shortDescription, bulletPoints, longDescription, seoKeywords, priceRecommendation, riskNotes, score, marketInsight.',
@@ -404,6 +528,49 @@ function getAiSystemPrompt() {
     'priceRecommendation ma opisac rekomendacje cenowa po polsku, nie jako sama liczbe.',
     'marketInsight musi byc obiektem z polami: recommendedPrice, competitionLevel, marketPosition, pricingAdvice, keywordAdvice.',
   ].join(' ');
+}
+
+function readMarketNumber(marketData, key) {
+  const value = Number(marketData?.[key] || 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function formatPln(value) {
+  return `${Number(value || 0).toFixed(2)} PLN`;
+}
+
+function getRecommendedMarketPrice(marketData, fallbackPrice) {
+  const avgPrice = readMarketNumber(marketData, 'avgPrice');
+  const minPrice = readMarketNumber(marketData, 'minPrice');
+  const maxPrice = readMarketNumber(marketData, 'maxPrice');
+  const sellerCount = readMarketNumber(marketData, 'sellerCount');
+  const base = avgPrice || fallbackPrice || 0;
+  if (!base) return 0;
+
+  let price = base;
+  if (sellerCount > 30) price = base * 0.97;
+  if (sellerCount > 0 && sellerCount <= 10 && maxPrice > 0) price = Math.min(maxPrice, base * 1.05);
+  if (minPrice > 0) price = Math.max(minPrice, price);
+  if (maxPrice > 0) price = Math.min(maxPrice, price);
+  return Number(price.toFixed(2));
+}
+
+function getCompetitionLevel(marketData) {
+  const sellerCount = readMarketNumber(marketData, 'sellerCount');
+  if (sellerCount <= 0) return 'Brak danych o liczbie sprzedawcow w marketData.';
+  if (sellerCount <= 10) return `Niska konkurencja: ${sellerCount} sprzedawcow.`;
+  if (sellerCount <= 30) return `Srednia konkurencja: ${sellerCount} sprzedawcow.`;
+  return `Wysoka konkurencja: ${sellerCount} sprzedawcow.`;
+}
+
+function getMarketPosition(marketData, recommendedPrice) {
+  const avgPrice = readMarketNumber(marketData, 'avgPrice');
+  const minPrice = readMarketNumber(marketData, 'minPrice');
+  const maxPrice = readMarketNumber(marketData, 'maxPrice');
+  if (!avgPrice) return 'Brak sredniej ceny w marketData.';
+  if (recommendedPrice < avgPrice) return `Pozycja cenowa ponizej sredniej rynkowej ${formatPln(avgPrice)}.`;
+  if (recommendedPrice > avgPrice) return `Pozycja cenowa powyzej sredniej rynkowej ${formatPln(avgPrice)}, w zakresie ${formatPln(minPrice)}-${formatPln(maxPrice)}.`;
+  return `Pozycja cenowa przy sredniej rynkowej ${formatPln(avgPrice)}.`;
 }
 
 function getFallbackSuggestedPrice(input) {
@@ -419,6 +586,12 @@ function normalizeAiListing(data, input) {
   const suggestedPrice = Number(data?.suggestedPrice || getFallbackSuggestedPrice(input) || 0);
   const hasMarketData = Boolean(input?.marketData && Object.keys(input.marketData).length);
   const marketInsight = data?.marketInsight && typeof data.marketInsight === 'object' ? data.marketInsight : {};
+  const recommendedMarketPrice = hasMarketData ? getRecommendedMarketPrice(input.marketData, suggestedPrice) : 0;
+  const avgPrice = readMarketNumber(input.marketData, 'avgPrice');
+  const minPrice = readMarketNumber(input.marketData, 'minPrice');
+  const maxPrice = readMarketNumber(input.marketData, 'maxPrice');
+  const sellerCount = readMarketNumber(input.marketData, 'sellerCount');
+  const marketName = input.marketData?.name || input.productName || 'produkt';
   return {
     title: String(data?.title || input.productName || 'Nowy produkt'),
     shortDescription: String(data?.shortDescription || ''),
@@ -436,11 +609,22 @@ function normalizeAiListing(data, input) {
       : ['Zweryfikuj konkurencje, koszty dostawy i zgodnosc opisu z realnym produktem.'],
     score: Number.isFinite(fallbackScore) ? fallbackScore : 0,
     marketInsight: {
-      recommendedPrice: String(marketInsight.recommendedPrice || (hasMarketData ? 'Sprawdz cene wzgledem sredniej rynkowej.' : 'Dane rynkowe nie sa podlaczone.')),
-      competitionLevel: String(marketInsight.competitionLevel || (hasMarketData ? 'Do oceny na podstawie importu CSV.' : 'Brak danych rynkowych.')),
-      marketPosition: String(marketInsight.marketPosition || (hasMarketData ? 'Porownaj oferte z importowanymi danymi rynku.' : 'Dane rynkowe nie sa podlaczone.')),
-      pricingAdvice: String(marketInsight.pricingAdvice || (hasMarketData ? 'Uzyj importowanych cen jako punktu odniesienia.' : 'Dodaj dane CSV w Market Data Collector lub Product Hunter Import.')),
-      keywordAdvice: String(marketInsight.keywordAdvice || (hasMarketData ? 'Dopasuj slowa kluczowe do nazw z importu.' : 'Po imporcie danych AI porowna slowa kluczowe z rynkiem.')),
+      recommendedPrice: String(
+        marketInsight.recommendedPrice ||
+          (hasMarketData ? `${formatPln(recommendedMarketPrice)} na podstawie marketData avg ${formatPln(avgPrice)}.` : 'Dane rynkowe nie sa podlaczone.'),
+      ),
+      competitionLevel: String(marketInsight.competitionLevel || (hasMarketData ? getCompetitionLevel(input.marketData) : 'Brak danych rynkowych.')),
+      marketPosition: String(marketInsight.marketPosition || (hasMarketData ? getMarketPosition(input.marketData, recommendedMarketPrice) : 'Dane rynkowe nie sa podlaczone.')),
+      pricingAdvice: String(
+        marketInsight.pricingAdvice ||
+          (hasMarketData
+            ? `Ustaw cene w relacji do zakresu ${formatPln(minPrice)}-${formatPln(maxPrice)} i ${sellerCount} sprzedawcow.`
+            : 'Dodaj dane CSV w Market Data Collector lub Product Hunter Import.'),
+      ),
+      keywordAdvice: String(
+        marketInsight.keywordAdvice ||
+          (hasMarketData ? `Uzyj fraz z marketData: ${marketName}.` : 'Po imporcie danych AI porowna slowa kluczowe z rynkiem.'),
+      ),
     },
     aiRecommendation: String(data?.aiRecommendation || data?.priceRecommendation || 'Sprawdz marze, konkurencje i dostepnosc przed wystawieniem.'),
   };
@@ -492,6 +676,8 @@ async function generateAiListing(input, config) {
             marketRecommendation: input.marketRecommendation || '',
             marketNotes: input.marketNotes || '',
             marketData: input.marketData || null,
+            productCatalogData: input.productCatalogData || null,
+            sellerReality: input.sellerReality || null,
           }),
         },
       ],
@@ -627,6 +813,54 @@ async function handleRequest(request, response) {
     return;
   }
 
+  if (url.pathname === '/api/allegro/products-search') {
+    const phrase = url.searchParams.get('phrase') || '';
+    if (!phrase.trim()) {
+      sendJson(response, 400, {
+        error: 'missing_phrase',
+        message: 'Set phrase query parameter, for example /api/allegro/products-search?phrase=Montessori.',
+      });
+      return;
+    }
+
+    const result = await searchAllegroProducts(phrase);
+    sendJson(response, result.statusCode, result.data);
+    return;
+  }
+
+  if (url.pathname === '/api/allegro/my-offers') {
+    const result = await getSellerOffers();
+    sendJson(response, result.statusCode, result.data);
+    return;
+  }
+
+  if (url.pathname === '/api/allegro/orders-summary') {
+    const result = await getOrdersSummary();
+    sendJson(response, result.statusCode, result.data);
+    return;
+  }
+
+  if (url.pathname === '/api/allegro/categories') {
+    const result = await callAllegro('/sale/categories');
+    sendJson(response, result.statusCode, result.data);
+    return;
+  }
+
+  if (url.pathname === '/api/allegro/category-parameters') {
+    const categoryId = url.searchParams.get('categoryId') || '';
+    if (!categoryId.trim()) {
+      sendJson(response, 400, {
+        error: 'missing_category_id',
+        message: 'Set categoryId query parameter, for example /api/allegro/category-parameters?categoryId=123.',
+      });
+      return;
+    }
+
+    const result = await callAllegro(`/sale/categories/${encodeURIComponent(categoryId)}/parameters`);
+    sendJson(response, result.statusCode, result.data);
+    return;
+  }
+
   if (url.pathname === '/api/allegro/search') {
     const phrase = url.searchParams.get('phrase') || '';
     if (!phrase.trim()) {
@@ -641,7 +875,7 @@ async function handleRequest(request, response) {
       return;
     }
 
-    const result = await callAllegro(`/sale/products?phrase=${encodeURIComponent(phrase)}&language=pl-PL`);
+    const result = await searchAllegroProducts(phrase);
     const products = Array.isArray(result.data?.products) ? result.data.products.length : 0;
     console.log('[Allegro product search] fetched products', {
       phrase,
@@ -673,7 +907,7 @@ async function handleRequest(request, response) {
 
   sendJson(response, 404, {
     error: 'not_found',
-    message: 'Available endpoints: /api/ai/listing, /api/allegro/login, /api/allegro/callback, /api/allegro/search?phrase=, /api/allegro/me, /api/allegro/orders, /api/allegro/offers',
+    message: 'Available endpoints: /api/ai/listing, /api/allegro/login, /api/allegro/callback, /api/allegro/products-search?phrase=, /api/allegro/my-offers, /api/allegro/orders-summary, /api/allegro/categories, /api/allegro/category-parameters?categoryId=, /api/allegro/search?phrase=, /api/allegro/me, /api/allegro/orders, /api/allegro/offers',
   });
 }
 

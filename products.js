@@ -28,6 +28,17 @@ function formatMoney(value, currency = 'PLN') {
   }).format(value);
 }
 
+function formatDate(value) {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('pl-PL', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 function showMessage(message, type = 'info') {
   productsMessage.textContent = message;
   productsMessage.classList.toggle('error', type === 'error');
@@ -85,6 +96,7 @@ function getSales(offer) {
 }
 
 function normalizeProduct(offer) {
+  if (window.AllegroLive) return window.AllegroLive.normalizeOffer(offer);
   const price = getPrice(offer);
   const amount = Number.parseFloat(String(price?.amount || '0').replace(',', '.'));
   const quantity = getQuantity(offer);
@@ -101,6 +113,9 @@ function normalizeProduct(offer) {
     status,
     views: getViews(offer),
     sales: getSales(offer),
+    marketplace: offer?.publication?.marketplace || offer?.marketplace?.id || '-',
+    startedAt: offer?.publication?.startedAt || offer?.createdAt || '',
+    link: offer?.publication?.link || offer?.url || offer?.id || '-',
   };
 }
 
@@ -181,12 +196,13 @@ function renderProducts() {
               <span class="product-name">${escapeHtml(product.name)}</span>
             </div>
           </td>
-          <td>${escapeHtml(product.sku)}</td>
+          <td>${escapeHtml(product.id)}</td>
           <td>${escapeHtml(formatMoney(product.amount, product.currency))}</td>
-          <td>${escapeHtml(product.quantity)}</td>
+          <td>${escapeHtml(product.currency)}</td>
           <td><span class="badge ${statusTone(product.status)}">${escapeHtml(product.status)}</span></td>
-          <td>${escapeHtml(product.views)}</td>
-          <td>${escapeHtml(product.sales)}</td>
+          <td>${escapeHtml(product.marketplace || '-')}</td>
+          <td>${escapeHtml(formatDate(product.startedAt))}</td>
+          <td>${escapeHtml(product.link || product.id)}</td>
         </tr>
       `;
     })
@@ -221,6 +237,7 @@ function renderApiError(status, message) {
       <td>-</td>
       <td><span class="badge error">${escapeHtml(status)}</span></td>
       <td>-</td>
+      <td>-</td>
       <td>${escapeHtml(message)}</td>
     </tr>
   `;
@@ -235,34 +252,18 @@ async function loadProducts() {
   refreshProductsButton.textContent = 'Ładowanie...';
 
   try {
-    const response = await fetch('http://localhost:3000/api/allegro/offers');
-    const data = await response.json();
-
-    if (!response.ok) {
-      const authError = response.status === 401 || data?.error === 'not_authenticated';
-
-      if (authError) {
-        setAuthState(true);
-        showMessage('Najpierw połącz konto Allegro przez /api/allegro/login', 'error');
-      } else {
-        const message = data?.message || data?.error || JSON.stringify(data);
-        showMessage(`Allegro API zwróciło błąd: ${message}`, 'error');
-        renderApiError(`HTTP ${response.status}`, message);
-      }
-      allProducts = [];
-      if (authError) {
-        renderProducts();
-      }
-      return;
-    }
-
-    allProducts = getOffers(data).map(normalizeProduct);
+    allProducts = await window.AllegroLive.loadAllegroOffers();
     renderProducts();
   } catch (error) {
-    setAuthState(true);
     allProducts = [];
     renderProducts();
-    showMessage('Najpierw połącz konto Allegro przez /api/allegro/login', 'error');
+    if (window.AllegroLive?.isAuthError(error)) {
+      setAuthState(true);
+      showMessage('Click Connect Allegro / Polacz Allegro, aby pobrac ogloszenia.', 'error');
+    } else {
+      showMessage(error.message || 'Nie udalo sie pobrac ogloszen Allegro.', 'error');
+      renderApiError(`HTTP ${error.status || '-'}`, error.message || 'Blad API');
+    }
   } finally {
     refreshProductsButton.disabled = false;
     refreshProductsButton.textContent = 'Odśwież';

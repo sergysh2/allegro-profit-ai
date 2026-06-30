@@ -1,4 +1,5 @@
 const refreshButton = document.querySelector('#refresh-dashboard');
+const refreshLiveDataButton = document.querySelector('#refresh-live-data');
 const statusCard = document.querySelector('#status-card');
 const statusTitle = document.querySelector('#status-title');
 const statusMessage = document.querySelector('#status-message');
@@ -15,6 +16,15 @@ const kpi = {
 const topProductsBody = document.querySelector('#top-products-body');
 const recentOrdersBody = document.querySelector('#recent-orders-body');
 const alertsList = document.querySelector('#alerts-list');
+
+const liveEls = {
+  status: document.querySelector('#live-status'),
+  account: document.querySelector('#live-account'),
+  activeOffers: document.querySelector('#live-active-offers'),
+  ordersCount: document.querySelector('#live-orders-count'),
+  revenue: document.querySelector('#live-revenue'),
+  averageOrder: document.querySelector('#live-average-order'),
+};
 
 let orders = [];
 let products = [];
@@ -286,5 +296,56 @@ async function loadDashboard() {
   }
 }
 
+function getAccountLabel(me) {
+  return [
+    me?.login || me?.id || '-',
+    me?.email || '',
+    me?.company?.name || me?.companyName || '',
+  ]
+    .filter(Boolean)
+    .join(' / ');
+}
+
+async function loadAllegroLiveData() {
+  liveEls.status.textContent = 'Ladowanie...';
+  refreshLiveDataButton.disabled = true;
+  refreshLiveDataButton.textContent = 'Loading...';
+
+  try {
+    const [me, offers, liveOrders] = await Promise.all([
+      window.AllegroLive.loadAllegroMe(),
+      window.AllegroLive.loadAllegroOffers(),
+      window.AllegroLive.loadAllegroOrders(),
+    ]);
+    const summary = window.AllegroLive.calculateOrdersSummary(liveOrders);
+
+    liveEls.status.textContent = 'Connected';
+    liveEls.account.textContent = getAccountLabel(me);
+    liveEls.activeOffers.textContent = String(offers.filter((offer) => String(offer.status).toUpperCase() === 'ACTIVE').length);
+    liveEls.ordersCount.textContent = String(summary.totalOrders);
+    liveEls.revenue.textContent = formatMoney(summary.totalRevenue, summary.currency);
+    liveEls.averageOrder.textContent = formatMoney(summary.averageOrderValue, summary.currency);
+    hideStatus();
+  } catch (error) {
+    liveEls.status.textContent = window.AllegroLive.isAuthError(error) ? 'Not connected' : 'Error';
+    liveEls.account.textContent = '-';
+    liveEls.activeOffers.textContent = '0';
+    liveEls.ordersCount.textContent = '0';
+    liveEls.revenue.textContent = formatMoney(0);
+    liveEls.averageOrder.textContent = formatMoney(0);
+
+    if (window.AllegroLive.isAuthError(error)) {
+      showStatus('Brak autoryzacji Allegro', 'Click Connect Allegro / Polacz Allegro, aby pobrac live data.', 'error', true);
+    } else {
+      showStatus('Blad live data', error.message || 'Nie udalo sie pobrac danych Allegro.', 'error');
+    }
+  } finally {
+    refreshLiveDataButton.disabled = false;
+    refreshLiveDataButton.textContent = 'Refresh Allegro data';
+  }
+}
+
 refreshButton.addEventListener('click', loadDashboard);
+refreshLiveDataButton.addEventListener('click', loadAllegroLiveData);
 loadDashboard();
+loadAllegroLiveData();

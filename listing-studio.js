@@ -8,6 +8,16 @@ const messageEl = document.querySelector('#studio-message');
 const marketMessageEl = document.querySelector('#market-message');
 const aiStatus = document.querySelector('#ai-status');
 const useMarketDataButton = document.querySelector('#use-market-data');
+const useMatchedMarketDataButton = document.querySelector('#use-matched-market-data');
+const clearMarketDataButton = document.querySelector('#clear-market-data');
+const loadDemoMarketDataButton = document.querySelector('#load-demo-market-data');
+const loadRealAllegroProductButton = document.querySelector('#load-real-allegro-product');
+const marketMatchStatus = document.querySelector('#market-match-status');
+const marketMatchSource = document.querySelector('#market-match-source');
+const catalogDataStatus = document.querySelector('#catalog-data-status');
+const catalogDataSource = document.querySelector('#catalog-data-source');
+const sellerRealityStatus = document.querySelector('#seller-reality-status');
+const sellerRealityDetails = document.querySelector('#seller-reality-details');
 
 const resultEls = {
   name: document.querySelector('#result-name'),
@@ -34,11 +44,15 @@ const resultEls = {
 
 const STORAGE_KEY = 'listing-studio:ideas';
 const SELECTED_MARKET_PRODUCT_KEY = 'selectedMarketProduct';
+const SHARED_MARKET_KEY = 'allegroProfitMarketData';
 const PRODUCT_HUNTER_MARKET_KEY = 'product-hunter:market-results';
 const COLLECTOR_MARKET_KEY = 'market-data-collector:market';
 const COLLECTOR_MATCHED_KEY = 'market-data-collector:matched';
 let currentListing = null;
 let isGenerating = false;
+let selectedMarketData = null;
+let selectedCatalogProduct = null;
+let selectedSellerReality = null;
 
 window.openMarketDataForSku = function (sku) {
   console.log('openMarketDataForSku', sku);
@@ -168,6 +182,24 @@ function nameSimilarity(left, right) {
   return common / Math.max(leftWords.size, rightWords.size);
 }
 
+function findBestByName(items, targetName, getName) {
+  const normalizedTarget = normalizeName(targetName);
+  if (!normalizedTarget || !items.length) return null;
+
+  return items
+    .map((item) => {
+      const itemName = normalizeName(getName(item));
+      const exact = itemName === normalizedTarget ? 4 : 0;
+      const partial = itemName.includes(normalizedTarget) || normalizedTarget.includes(itemName) ? 2 : 0;
+      return {
+        item,
+        score: exact + partial + nameSimilarity(normalizedTarget, itemName),
+      };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)[0]?.item;
+}
+
 function normalizeMarketRow(row, source = 'market') {
   const market = row?.market || row || {};
   const supplier = row?.supplier || {};
@@ -189,6 +221,7 @@ function normalizeMarketRow(row, source = 'market') {
 }
 
 function getMarketCandidates() {
+  const sharedRows = readJsonStorage(SHARED_MARKET_KEY).map((row) => normalizeMarketRow(row, 'allegroProfitMarketData'));
   const productHunterRows = readJsonStorage(PRODUCT_HUNTER_MARKET_KEY).map((row) => normalizeMarketRow(row, 'Product Hunter Import'));
   const collectorMarketRows = readJsonStorage(COLLECTOR_MARKET_KEY).map((row) => normalizeMarketRow(row, 'Market Data Collector'));
   const collectorMatchedRows = readJsonStorage(COLLECTOR_MATCHED_KEY).map((row) => normalizeMarketRow(row, 'Market Data Collector match'));
@@ -209,28 +242,43 @@ function getMarketCandidates() {
       ),
     );
 
-  return [...ideaRows, ...productHunterRows, ...collectorMatchedRows, ...collectorMarketRows].filter((row) => row.name || row.avgPrice || row.sourceUrl);
+  return [...sharedRows, ...ideaRows, ...productHunterRows, ...collectorMatchedRows, ...collectorMarketRows].filter(
+    (row) => row.name || row.avgPrice || row.sourceUrl,
+  );
 }
 
 function findBestMarketData(input) {
   const candidates = getMarketCandidates();
   if (!candidates.length) return null;
 
-  const productName = input.productName || '';
-  const keywords = input.keywords || '';
+  const productName = normalizeName(input.productName || '');
+  const keywords = String(input.keywords || '')
+    .split(',')
+    .map((item) => normalizeName(item))
+    .filter(Boolean);
+  if (!productName && !keywords.length) return null;
 
-  return candidates
-    .map((row) => ({
-      row,
-      score:
-        Math.max(nameSimilarity(productName, row.name), nameSimilarity(keywords, row.name)) +
-        (row.avgPrice > 0 ? 0.08 : 0) +
-        (row.sellerCount > 0 ? 0.05 : 0),
-    }))
+  const scored = candidates
+    .map((row) => {
+      const rowName = normalizeName(row.name);
+      const exactScore = productName && rowName === productName ? 4 : 0;
+      const partialScore = productName && (rowName.includes(productName) || productName.includes(rowName)) ? 2.5 : 0;
+      const keywordScore = keywords.reduce((best, keyword) => Math.max(best, rowName.includes(keyword) ? 1.5 : nameSimilarity(keyword, row.name)), 0);
+      const similarityScore = nameSimilarity(productName, row.name);
+      const qualityScore = (row.avgPrice > 0 ? 0.08 : 0) + (row.sellerCount > 0 ? 0.05 : 0);
+      return {
+        row,
+        score: exactScore + partialScore + keywordScore + similarityScore + qualityScore,
+      };
+    })
+    .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)[0]?.row;
+
+  return scored || null;
 }
 
 function fillMarketFields(row) {
+  selectedMarketData = row;
   form.elements.marketAvgPrice.value = row.avgPrice || '';
   form.elements.marketMinPrice.value = row.minPrice || '';
   form.elements.marketMaxPrice.value = row.maxPrice || '';
@@ -247,11 +295,190 @@ function fillMarketFields(row) {
     .join('\n');
 }
 
+function clearMarketFields() {
+  selectedMarketData = null;
+  form.elements.marketAvgPrice.value = '';
+  form.elements.marketMinPrice.value = '';
+  form.elements.marketMaxPrice.value = '';
+  form.elements.sellerCount.value = '';
+  form.elements.popularity.value = '';
+  form.elements.marketSourceUrl.value = '';
+  form.elements.marketNotes.value = '';
+}
+
+function updateMarketMatchStatus() {
+  const input = getFormData();
+  const row = findBestMarketData(input);
+
+  if (!row) {
+    marketMatchStatus.textContent = 'Nie znaleziono dopasowania';
+    marketMatchSource.textContent = 'Нет рыночных данных. Импортируйте CSV через Product Hunter или Market Data Collector.';
+    return null;
+  }
+
+  marketMatchStatus.textContent = `Znaleziono: ${row.name || 'bez nazwy'}`;
+  marketMatchSource.textContent = [
+    `Source: ${row.source}`,
+    row.avgPrice ? `Avg price: ${formatMoney(row.avgPrice)}` : '',
+    row.sellerCount ? `Seller count: ${row.sellerCount}` : '',
+    row.sourceUrl ? `URL: ${row.sourceUrl}` : '',
+  ]
+    .filter(Boolean)
+    .join(' | ');
+  return row;
+}
+
+function loadDemoMarketData() {
+  const demoRows = [
+    {
+      name: 'Organizer do szuflady',
+      competitor_price: 29.99,
+      seller_count: 18,
+      popularity: 75,
+      min_price: 24.99,
+      max_price: 39.99,
+      avg_price: 31.5,
+      source_url: 'demo://organizer-do-szuflady',
+    },
+    {
+      name: 'Zestaw Montessori',
+      competitor_price: 159.99,
+      seller_count: 12,
+      popularity: 68,
+      min_price: 129.99,
+      max_price: 219.99,
+      avg_price: 174.5,
+      source_url: 'demo://zestaw-montessori',
+    },
+  ];
+  localStorage.setItem(SHARED_MARKET_KEY, JSON.stringify(demoRows));
+  updateMarketMatchStatus();
+  showMarketMessage('Demo market data zapisane w localStorage jako allegroProfitMarketData.');
+}
+
+function formatBackendError(status, data) {
+  if (status === 401 || data?.error === 'not_authenticated') {
+    return 'Najpierw kliknij Connect Allegro / Polacz Allegro i zaloguj sie przez OAuth.';
+  }
+  return data?.message || 'Backend albo Allegro API zwrocilo blad.';
+}
+
+function getProductImage(product) {
+  return product?.image || product?.images?.[0]?.url || product?.images?.[0] || '';
+}
+
+async function loadSellerReality(productName) {
+  selectedSellerReality = null;
+  sellerRealityStatus.textContent = 'Sprawdzam oferty i zamowienia...';
+  sellerRealityDetails.textContent = 'Pobieram /api/allegro/offers oraz /api/allegro/orders.';
+
+  try {
+    const [offers, orders] = await Promise.all([
+      window.AllegroLive.loadAllegroOffers(),
+      window.AllegroLive.loadAllegroOrders(),
+    ]);
+    const matchedOffer = window.AllegroLive.findMatchingOffer(offers, productName);
+    const matchedOrders = window.AllegroLive.findMatchingOrders(orders, productName);
+    const revenue = matchedOrders.reduce((sum, order) => sum + order.amount, 0);
+    const soldQuantity = matchedOrders.reduce((sum, order) => sum + order.itemsCount, 0);
+    const averageSoldPrice = soldQuantity > 0 ? revenue / soldQuantity : 0;
+
+    if (!matchedOffer && !matchedOrders.length) {
+      sellerRealityStatus.textContent = 'Brak historii sprzedazy tego produktu';
+      sellerRealityDetails.textContent = `Sprawdzono ${offers.length} ofert i ${orders.length} zamowien.`;
+      return;
+    }
+
+    selectedSellerReality = {
+      matchedOffer: matchedOffer
+        ? {
+            id: matchedOffer.id,
+            name: matchedOffer.name,
+            status: matchedOffer.status,
+            price: matchedOffer.amount,
+            currency: matchedOffer.currency,
+          }
+        : null,
+      matchedOrderCount: matchedOrders.length,
+      soldQuantity,
+      revenue,
+      averageSoldPrice,
+    };
+    sellerRealityStatus.textContent = matchedOffer ? `Matched offer: ${matchedOffer.name}` : 'Produkt znaleziony w zamowieniach';
+    sellerRealityDetails.textContent = [
+      matchedOffer ? `Offer ID: ${matchedOffer.id}` : '',
+      `Matched order count: ${matchedOrders.length}`,
+      `Revenue: ${formatMoney(revenue)}`,
+      `Average sold price: ${formatMoney(averageSoldPrice)}`,
+    ].join(' | ');
+  } catch (error) {
+    sellerRealityStatus.textContent = 'Seller Reality niedostepne';
+    sellerRealityDetails.textContent = window.AllegroLive?.isAuthError(error)
+      ? 'Click Connect Allegro / Polacz Allegro, aby pobrac Seller Reality.'
+      : 'Backend nie dziala albo Allegro API zwrocilo blad.';
+  }
+}
+
+async function loadRealAllegroProductData() {
+  hideMarketMessage();
+  const input = getFormData();
+  const phrase = input.productName || input.keywords;
+  if (!phrase) {
+    showMarketMessage('Wpisz nazwe towaru przed pobraniem danych z katalogu Allegro.', 'error');
+    return;
+  }
+
+  catalogDataStatus.textContent = 'Pobieram katalog Allegro...';
+  catalogDataSource.textContent = 'GET /api/allegro/products-search?phrase=';
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/allegro/products-search?phrase=${encodeURIComponent(phrase)}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      catalogDataStatus.textContent = 'Nie udalo sie pobrac katalogu Allegro';
+      catalogDataSource.textContent = formatBackendError(response.status, data);
+      showMarketMessage(formatBackendError(response.status, data), 'error');
+      return;
+    }
+
+    const products = Array.isArray(data?.products) ? data.products : [];
+    const product = findBestByName(products, phrase, (item) => item.name) || products[0];
+
+    if (!product) {
+      catalogDataStatus.textContent = 'Brak produktu w katalogu Allegro';
+      catalogDataSource.textContent = 'Sprobuj innej nazwy lub frazy.';
+      return;
+    }
+
+    selectedCatalogProduct = product;
+    form.elements.productName.value = product.name || input.productName;
+    form.elements.allegroProductId.value = product.id || '';
+    form.elements.category.value = product.categoryId || '';
+    form.elements.imageUrl.value = getProductImage(product);
+    catalogDataStatus.textContent = `Zaladowano: ${product.name || product.id}`;
+    catalogDataSource.textContent = [
+      `Product ID: ${product.id || '-'}`,
+      `Category ID: ${product.categoryId || '-'}`,
+      `Source: ${product.source || 'Allegro /sale/products'}`,
+      'Allegro product catalog does not provide market price data.',
+    ].join(' | ');
+    updateMarketMatchStatus();
+    await loadSellerReality(product.name || input.productName);
+    showMarketMessage('Zaladowano realne dane produktu z katalogu Allegro. Ceny rynkowe nadal wymagaja CSV/import.');
+  } catch {
+    catalogDataStatus.textContent = 'Backend niedostepny';
+    catalogDataSource.textContent = 'Uruchom backend i polacz Allegro.';
+    showMarketMessage('Backend nie dziala albo konto Allegro nie jest polaczone.', 'error');
+  }
+}
+
 function getFormData() {
   const data = new FormData(form);
   return {
     supplierUrl: String(data.get('supplierUrl') || '').trim(),
     productName: String(data.get('productName') || '').trim(),
+    allegroProductId: String(data.get('allegroProductId') || '').trim(),
     purchasePrice: readNumber(data.get('purchasePrice')),
     deliveryCost: readNumber(data.get('deliveryCost')),
     packagingCost: readNumber(data.get('packagingCost')),
@@ -320,6 +547,9 @@ function buildListing(input, aiData) {
     id: crypto.randomUUID(),
     supplierUrl: input.supplierUrl,
     productName,
+    allegroProductId: input.allegroProductId,
+    catalogSource: selectedCatalogProduct?.source || '',
+    sellerReality: selectedSellerReality,
     purchasePrice: input.purchasePrice,
     deliveryCost: input.deliveryCost,
     packagingCost: input.packagingCost,
@@ -407,6 +637,8 @@ function buildMarketData(input) {
   if (!hasMarketData) return null;
 
   return {
+    name: selectedMarketData?.name || '',
+    competitorPrice: selectedMarketData?.competitorPrice || 0,
     avgPrice: input.marketAvgPrice,
     minPrice: input.marketMinPrice,
     maxPrice: input.marketMaxPrice,
@@ -414,6 +646,7 @@ function buildMarketData(input) {
     popularity: input.popularity,
     sourceUrl: input.marketSourceUrl,
     notes: input.marketNotes,
+    source: selectedMarketData?.source || '',
   };
 }
 
@@ -426,6 +659,7 @@ async function requestAiListing(input) {
     },
     body: JSON.stringify({
       productName: input.productName,
+      allegroProductId: input.allegroProductId,
       category: input.category,
       keywords: input.keywords,
       purchasePrice: input.purchasePrice,
@@ -439,6 +673,19 @@ async function requestAiListing(input) {
       marketRecommendation: input.marketRecommendation || '',
       marketNotes: input.marketNotes,
       marketData,
+      productCatalogData: selectedCatalogProduct
+        ? {
+            id: selectedCatalogProduct.id,
+            name: selectedCatalogProduct.name,
+            categoryId: selectedCatalogProduct.categoryId,
+            categoryPath: selectedCatalogProduct.categoryPath,
+            image: selectedCatalogProduct.image,
+            publicationStatus: selectedCatalogProduct.publicationStatus,
+            source: selectedCatalogProduct.source || 'Allegro /sale/products',
+            note: 'Allegro product catalog does not provide market price data.',
+          }
+        : null,
+      sellerReality: selectedSellerReality,
     }),
   });
   const body = await response.text();
@@ -499,12 +746,20 @@ function useBestMarketData() {
 
   const row = findBestMarketData(input);
   if (!row) {
-    showMarketMessage('Brak market data w localStorage. Zaimportuj CSV w Product Hunter albo Market Data Collector.', 'error');
+    updateMarketMatchStatus();
+    showMarketMessage('Нет рыночных данных. Импортируйте CSV через Product Hunter или Market Data Collector.', 'error');
     return;
   }
 
   fillMarketFields(row);
+  updateMarketMatchStatus();
   showMarketMessage(`Uzyto market data: ${row.name || 'bez nazwy'} (${row.source}).`);
+}
+
+function clearMarketData() {
+  clearMarketFields();
+  updateMarketMatchStatus();
+  showMarketMessage('Market data wyczyszczone z formularza.');
 }
 
 function deleteIdea(id) {
@@ -623,6 +878,10 @@ generateButton.addEventListener('click', async () => {
   await generateListing();
 });
 useMarketDataButton.addEventListener('click', useBestMarketData);
+useMatchedMarketDataButton.addEventListener('click', useBestMarketData);
+clearMarketDataButton.addEventListener('click', clearMarketData);
+loadDemoMarketDataButton.addEventListener('click', loadDemoMarketData);
+loadRealAllegroProductButton.addEventListener('click', loadRealAllegroProductData);
 saveButton.addEventListener('click', async () => {
   if (isGenerating) return;
   await saveCurrentIdea();
@@ -663,4 +922,9 @@ document.addEventListener('click', function (event) {
   window.location.href = 'product-hunter.html#market-import';
 });
 
+['productName', 'keywords'].forEach((fieldName) => {
+  form.elements[fieldName]?.addEventListener('input', updateMarketMatchStatus);
+});
+
 renderIdeas();
+updateMarketMatchStatus();

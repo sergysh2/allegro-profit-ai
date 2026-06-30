@@ -14,6 +14,7 @@ const SUPPLIER_KEY = 'market-data-collector:supplier';
 const MARKET_KEY = 'market-data-collector:market';
 const MATCHED_KEY = 'market-data-collector:matched';
 const LISTING_KEY = 'listing-studio:ideas';
+const SHARED_MARKET_KEY = 'allegroProfitMarketData';
 
 let supplierRows = loadRows(SUPPLIER_KEY);
 let marketRows = loadRows(MARKET_KEY);
@@ -57,6 +58,20 @@ function loadRows(key) {
 
 function saveRows(key, rows) {
   localStorage.setItem(key, JSON.stringify(rows));
+}
+
+function saveSharedMarketData(rows) {
+  const sharedRows = rows.map((row) => ({
+    name: row.name || '',
+    competitor_price: readNumber(row.competitor_price),
+    seller_count: readNumber(row.seller_count),
+    popularity: readNumber(row.popularity),
+    min_price: readNumber(row.min_price),
+    max_price: readNumber(row.max_price),
+    avg_price: readNumber(row.avg_price),
+    source_url: row.source_url || '',
+  }));
+  localStorage.setItem(SHARED_MARKET_KEY, JSON.stringify(sharedRows));
 }
 
 function parseCsv(text) {
@@ -150,6 +165,7 @@ async function importCsv(file, type) {
       ean: row.ean || '',
     }));
     saveRows(MARKET_KEY, marketRows);
+    saveSharedMarketData(marketRows);
     showMessage(`Imported market rows: ${marketRows.length}`);
   }
 

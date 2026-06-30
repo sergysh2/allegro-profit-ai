@@ -66,6 +66,10 @@
                 <input id="product-name" name="productName" type="text" placeholder="np. Organizer do szuflady" required />
               </label>
               <label class="studio-field">
+                <span>Allegro product ID</span>
+                <input id="allegro-product-id" name="allegroProductId" type="text" placeholder="uzupelniane z katalogu Allegro" />
+              </label>
+              <label class="studio-field">
                 <span>Cena zakupu</span>
                 <input id="purchase-price" name="purchasePrice" type="number" min="0" step="0.01" value="0" />
               </label>
@@ -111,13 +115,42 @@
               </label>
             </div>
 
+            <div class="button-row">
+              <button class="secondary-button" id="load-real-allegro-product" type="button">Load real Allegro product data</button>
+            </div>
+
             <div class="market-analyzer">
               <div class="finance-toolbar">
                 <div>
                   <span class="eyebrow">MVP v15</span>
                   <h2>Market Analyzer</h2>
                 </div>
-                <button class="secondary-button" id="use-market-data" type="button">Use market data</button>
+                <div class="button-row compact-buttons">
+                  <button class="secondary-button" id="use-market-data" type="button">Use market data</button>
+                  <button class="secondary-button" id="use-matched-market-data" type="button">Use matched market data</button>
+                  <button class="secondary-button" id="clear-market-data" type="button">Clear market data</button>
+                  <button class="secondary-button" id="load-demo-market-data" type="button">Load demo market data</button>
+                </div>
+              </div>
+              <div class="market-match-card" id="market-match-card">
+                <span>Status dopasowania</span>
+                <strong id="market-match-status">Sprawdzam localStorage...</strong>
+                <p id="market-match-source">-</p>
+              </div>
+              <div class="market-match-card">
+                <span>Product catalog data from Allegro</span>
+                <strong id="catalog-data-status">Nie zaladowano katalogu Allegro</strong>
+                <p id="catalog-data-source">Allegro product catalog does not provide market price data.</p>
+              </div>
+              <div class="market-match-card">
+                <span>Market price data from CSV/import</span>
+                <strong id="csv-market-status">CSV/import market data</strong>
+                <p>Market avg/min/max price, seller count and popularity come only from CSV/import or legal external data source.</p>
+              </div>
+              <div class="market-match-card">
+                <span>Seller own sales data from Allegro orders</span>
+                <strong id="seller-reality-status">Seller Reality</strong>
+                <p id="seller-reality-details">Nie sprawdzono zamowien.</p>
               </div>
               <div class="form-grid">
                 <label class="studio-field">
@@ -290,6 +323,7 @@
       </section>
     </main>
 
-    <script src="listing-studio.js?v=1500"></script>
+    <script src="allegro-live.js?v=1800"></script>
+    <script src="listing-studio.js?v=1800"></script>
   </body>
 </html>

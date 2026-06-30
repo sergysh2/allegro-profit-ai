@@ -39,8 +39,8 @@
           </div>
           <div class="hero-card">
             <span>Status</span>
-            <strong>MVP v15 AI Market Analyzer gotowe</strong>
-            <p>Listing Studio przekazuje legalnie importowane market data do OpenAI i pokazuje marketInsight.</p>
+            <strong>MVP v18 Real Allegro Dashboard UI gotowe</strong>
+            <p>Dashboard, Produkty, Orders i Listing Studio korzystaja z live danych Allegro.</p>
           </div>
         </section>
 
@@ -275,6 +275,56 @@
                 <li>Use market data z Product Hunter Import i Market Data Collector</li>
                 <li>Przekazywanie marketData do POST /api/ai/listing</li>
                 <li>Market insight: recommendedPrice, competitionLevel, marketPosition, pricingAdvice i keywordAdvice</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">16</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v16</h3>
+                <span>Market Data localStorage Bridge gotowe</span>
+              </div>
+              <ul>
+                <li>Wspolny klucz localStorage: allegroProfitMarketData</li>
+                <li>Product Hunter i Market Data Collector zapisuja import CSV do wspolnego formatu</li>
+                <li>Listing Studio znajduje market data po nazwie, czesciowym dopasowaniu i slowach kluczowych</li>
+                <li>Load demo market data, Use matched market data i Clear market data</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">17</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v17</h3>
+                <span>Real Allegro Data Foundation gotowe</span>
+              </div>
+              <ul>
+                <li>Endpointy: products-search, my-offers, orders-summary, categories i category-parameters</li>
+                <li>Product Hunter uzywa /api/allegro/products-search?phrase=</li>
+                <li>Listing Studio laduje realne dane produktu z katalogu Allegro</li>
+                <li>Seller Reality z wlasnych zamowien Allegro bez danych osobowych</li>
+                <li>Jasny podzial: katalog Allegro, market CSV/import i wlasne zamowienia</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">18</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v18</h3>
+                <span>Real Allegro Dashboard UI gotowe</span>
+              </div>
+              <ul>
+                <li>Allegro Live Data na Dashboard</li>
+                <li>Produkty z realnych ofert Allegro</li>
+                <li>Orders CRM z realnych zamowien Allegro</li>
+                <li>Wspolny helper allegro-live.js</li>
+                <li>Seller Reality w Listing Studio na podstawie ofert i zamowien</li>
               </ul>
             </div>
           </article>

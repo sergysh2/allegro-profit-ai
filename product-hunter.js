@@ -20,6 +20,7 @@ const marketAverageCompetitionEl = document.querySelector('#market-average-compe
 
 const LISTING_STORAGE_KEY = 'listing-studio:ideas';
 const MARKET_STORAGE_KEY = 'product-hunter:market-results';
+const SHARED_MARKET_KEY = 'allegroProfitMarketData';
 const SELECTED_MARKET_PRODUCT_KEY = 'selectedMarketProduct';
 let catalogProducts = [];
 let marketRows = loadMarketRows();
@@ -113,13 +114,16 @@ function getProducts(data) {
 }
 
 function getProductImage(product) {
-  return product?.images?.[0]?.url || product?.images?.[0] || '';
+  return product?.image || product?.images?.[0]?.url || product?.images?.[0] || '';
 }
 
 function getCategoryName(product) {
+  if (Array.isArray(product?.categoryPath) && product.categoryPath.length) {
+    return product.categoryPath.map((item) => item.name || item.id).filter(Boolean).join(' / ');
+  }
   const path = product?.category?.path;
   if (Array.isArray(path) && path.length) return path.at(-1)?.name || product?.category?.id || '-';
-  return product?.category?.id || '-';
+  return product?.categoryId || product?.category?.id || '-';
 }
 
 async function searchCatalog(event) {
@@ -133,7 +137,7 @@ async function searchCatalog(event) {
   renderCatalog();
 
   try {
-    const response = await fetch(`http://localhost:3000/api/allegro/search?phrase=${encodeURIComponent(phrase)}`);
+    const response = await fetch(`http://localhost:3000/api/allegro/products-search?phrase=${encodeURIComponent(phrase)}`);
     const data = await response.json();
 
     if (!response.ok) {
@@ -148,13 +152,15 @@ async function searchCatalog(event) {
       id: product.id || crypto.randomUUID(),
       name: product.name || 'Bez nazwy',
       image: getProductImage(product),
-      categoryId: product?.category?.id || '-',
+      categoryId: product?.categoryId || product?.category?.id || '-',
       categoryName: getCategoryName(product),
-      publicationStatus: product?.publication?.status || '-',
+      publicationStatus: product?.publicationStatus || product?.publication?.status || '-',
+      source: product?.source || 'Allegro /sale/products',
     }));
 
     renderCatalog();
     if (!catalogProducts.length) showMessage('Brak produktow w katalogu dla tej niszy.');
+    if (catalogProducts.length) showMessage('Allegro product catalog does not provide market price data. Market prices require CSV/import data.');
   } catch {
     setAuthState(true);
     showMessage('Backend nie dziala albo konto Allegro nie jest polaczone.', 'error');
@@ -173,6 +179,7 @@ function renderCatalog() {
               <td>${image}</td>
               <td class="product-name">${escapeHtml(product.name)}</td>
               <td>${escapeHtml(product.categoryId)}</td>
+              <td>${escapeHtml(product.categoryName)}</td>
               <td>${escapeHtml(product.publicationStatus)}</td>
               <td>${escapeHtml(product.id)}</td>
               <td><button class="secondary-button add-catalog-button" type="button" data-id="${escapeHtml(product.id)}">Send to Listing Studio</button></td>
@@ -180,7 +187,7 @@ function renderCatalog() {
           `;
         })
         .join('')
-    : '<tr><td colspan="6">Wpisz nisze i kliknij Szukaj.</td></tr>';
+    : '<tr><td colspan="7">Wpisz nisze i kliknij Szukaj.</td></tr>';
 }
 
 function parseCsv(text) {
@@ -277,6 +284,20 @@ function enrichMarketRow(row) {
   };
 }
 
+function saveSharedMarketData(rows) {
+  const sharedRows = rows.map((row) => ({
+    name: row.name || '',
+    competitor_price: readNumber(row.competitorPrice),
+    seller_count: readNumber(row.sellerCount),
+    popularity: readNumber(row.popularity),
+    min_price: readNumber(row.minPrice),
+    max_price: readNumber(row.maxPrice),
+    avg_price: readNumber(row.avgPrice),
+    source_url: row.sourceUrl || '',
+  }));
+  localStorage.setItem(SHARED_MARKET_KEY, JSON.stringify(sharedRows));
+}
+
 function rowsToObjects(rows) {
   const [headers, ...body] = rows;
   if (!headers) return [];
@@ -296,6 +317,7 @@ async function importCsv(event) {
   const objects = rowsToObjects(parseCsv(text));
   marketRows = objects.map(enrichMarketRow);
   localStorage.setItem(MARKET_STORAGE_KEY, JSON.stringify(marketRows));
+  saveSharedMarketData(marketRows);
   renderMarket();
   showMessage(`Zaimportowano ${marketRows.length} wierszy market data.`);
   csvInput.value = '';
@@ -460,6 +482,8 @@ function sendCatalogToListingStudio(id) {
     id: crypto.randomUUID(),
     supplierUrl: '',
     productId: product.id,
+    categoryId: product.categoryId,
+    catalogSource: product.source,
     productName: product.name,
     name: `${product.name} | Allegro | szybka wysylka`,
     purchasePrice: 0,
@@ -484,7 +508,7 @@ function sendCatalogToListingStudio(id) {
     recommendation: 'Uzupelnij dane rynkowe',
     shortDescription: `${product.name} z katalogu produktow Allegro.`,
     description: `Produkt ${product.name} zostal dodany z Product Catalog Hunter. Market prices require imported or external legal data source.`,
-    bullets: [`Product ID: ${product.id}`, `Category ID: ${product.categoryId}`, `Publication status: ${product.publicationStatus}`],
+    bullets: [`Product ID: ${product.id}`, `Category ID: ${product.categoryId}`, `Category path: ${product.categoryName}`, `Publication status: ${product.publicationStatus}`],
     createdAt: new Date().toISOString(),
   });
 }

@@ -116,6 +116,7 @@ function getPaymentStatusTone(status) {
 }
 
 function normalizeOrder(order) {
+  if (window.AllegroLive) return window.AllegroLive.normalizeOrder(order);
   const paidAmount = getPaidAmount(order);
   const amount = Number.parseFloat(String(paidAmount?.amount || '0').replace(',', '.'));
 
@@ -128,6 +129,11 @@ function normalizeOrder(order) {
     currency: paidAmount?.currency || 'PLN',
     paymentStatus: order?.payment?.status || '-',
     itemsCount: getItemsCount(order),
+    buyerEmail: order?.buyer?.email || '-',
+    phone: order?.buyer?.phoneNumber || order?.delivery?.address?.phoneNumber || '-',
+    city: order?.delivery?.address?.city || order?.invoice?.address?.city || '-',
+    createdAt: order?.boughtAt || order?.createdAt || order?.updatedAt || '',
+    finishedAt: order?.payment?.finishedAt || order?.finishedAt || '',
   };
 }
 
@@ -163,13 +169,15 @@ function renderOrders() {
       return `
         <tr>
           <td class="order-id">${escapeHtml(order.id)}</td>
-          <td>${escapeHtml(formatDate(order.paymentDate))}</td>
           <td>${escapeHtml(order.buyerLogin)}</td>
-          <td>${escapeHtml(order.buyerName)}</td>
+          <td>${escapeHtml(order.buyerEmail)}</td>
+          <td>${escapeHtml(order.phone)}</td>
+          <td>${escapeHtml(order.city)}</td>
           <td>${escapeHtml(order.amount.toFixed(2))}</td>
           <td>${escapeHtml(order.currency)}</td>
           <td><span class="badge ${paymentTone}">${escapeHtml(order.paymentStatus)}</span></td>
-          <td>${escapeHtml(order.itemsCount)}</td>
+          <td>${escapeHtml(formatDate(order.createdAt || order.paymentDate))}</td>
+          <td>${escapeHtml(formatDate(order.finishedAt))}</td>
         </tr>
       `;
     })
@@ -202,30 +210,17 @@ async function loadOrders() {
   refreshOrdersButton.textContent = 'Ładowanie...';
 
   try {
-    const response = await fetch('http://localhost:3000/api/allegro/orders');
-    const data = await response.json();
-
-    if (!response.ok) {
-      const authError = response.status === 401 || data?.error === 'not_authenticated';
-
-      if (authError) {
-        setAuthState(true);
-        showMessage('Najpierw połącz konto Allegro przez /api/allegro/login', 'error');
-      } else {
-        showMessage(data?.message || data?.error || 'Nie udało się pobrać zamówień Allegro.', 'error');
-      }
-      allOrders = [];
-      renderOrders();
-      return;
-    }
-
-    allOrders = getOrders(data).map(normalizeOrder);
+    allOrders = await window.AllegroLive.loadAllegroOrders();
     renderOrders();
   } catch (error) {
-    setAuthState(true);
     allOrders = [];
     renderOrders();
-    showMessage('Najpierw połącz konto Allegro przez /api/allegro/login', 'error');
+    if (window.AllegroLive?.isAuthError(error)) {
+      setAuthState(true);
+      showMessage('Click Connect Allegro / Polacz Allegro, aby pobrac zamowienia.', 'error');
+    } else {
+      showMessage(error.message || 'Nie udalo sie pobrac zamowien Allegro.', 'error');
+    }
   } finally {
     refreshOrdersButton.disabled = false;
     refreshOrdersButton.textContent = 'Odśwież';

@@ -24,9 +24,14 @@ Endpointy:
 - `GET /api/allegro/login`
 - `GET /api/allegro/callback`
 - `GET /api/allegro/search?phrase=`
+- `GET /api/allegro/products-search?phrase=`
 - `GET /api/allegro/me`
 - `GET /api/allegro/orders`
+- `GET /api/allegro/orders-summary`
 - `GET /api/allegro/offers`
+- `GET /api/allegro/my-offers`
+- `GET /api/allegro/categories`
+- `GET /api/allegro/category-parameters?categoryId=`
 - `POST /api/ai/listing`
 
 ## Uruchomienie frontend
@@ -103,6 +108,26 @@ Ten endpoint przekierowuje uzytkownika do logowania Allegro OAuth. Po autoryzacj
 ```text
 http://localhost:3000/api/allegro/callback
 ```
+
+Wymagane scope OAuth:
+
+```text
+allegro:api:sale:offers:read
+allegro:api:orders:read
+allegro:api:profile:read
+```
+
+Oficjalnie uzywane endpointy Allegro REST API:
+
+```text
+GET /sale/products
+GET /sale/offers
+GET /sale/categories
+GET /sale/categories/{categoryId}/parameters
+GET /order/checkout-forms
+```
+
+Nie uzywamy starego `GET /offers/listing`. Nie pobieramy cen rynkowych z `GET /sale/products`, bo ten endpoint zwraca katalog produktow, a nie publiczne oferty sprzedawcow. Market prices wymagaja CSV/importu albo innego legalnego zrodla danych.
 
 ## Wyszukiwanie przez Allegro API
 
@@ -461,6 +486,124 @@ name,competitor_price,seller_count,popularity,min_price,max_price,avg_price,sour
 Organizer do szuflady,29.99,18,75,24.99,39.99,31.50,https://allegro.pl/listing?string=organizer%20do%20szuflady
 ```
 
+### Market Data localStorage Bridge
+
+MVP v16 laczy Product Hunter, Market Data Collector i Listing Studio przez wspolny klucz:
+
+```text
+allegroProfitMarketData
+```
+
+Po imporcie CSV Product Hunter oraz Market Data Collector zapisuja dane w formacie:
+
+```json
+[
+  {
+    "name": "Organizer do szuflady",
+    "competitor_price": 29.99,
+    "seller_count": 18,
+    "popularity": 75,
+    "min_price": 24.99,
+    "max_price": 39.99,
+    "avg_price": 31.5,
+    "source_url": "https://allegro.pl/listing?string=organizer%20do%20szuflady"
+  }
+]
+```
+
+Jak zaimportowac CSV:
+
+1. Otworz `product-hunter.html` i przejdz do `Market Hunter Import`, albo otworz `market-data-collector.html`.
+2. Zaimportuj CSV z kolumnami:
+
+```csv
+name,competitor_price,seller_count,popularity,min_price,max_price,avg_price,source_url
+Organizer do szuflady,29.99,18,75,24.99,39.99,31.50,https://allegro.pl/listing?string=organizer%20do%20szuflady
+```
+
+Jak sprawdzic localStorage:
+
+1. Otworz DevTools w przegladarce.
+2. Wejdz w `Application` -> `Local storage`.
+3. Sprawdz klucz `allegroProfitMarketData`.
+
+Jak przetestowac Listing Studio z marketData:
+
+1. Otworz `listing-studio.html`.
+2. Kliknij `Load demo market data`.
+3. W polu `Nazwa towaru` wpisz `Organizer do szuflady` albo `Zestaw Montessori`.
+4. Sprawdz status w bloku `Market Analyzer`.
+5. Kliknij `Use matched market data`.
+6. Kliknij `Generuj listing`, aby wyslac marketData do `/api/ai/listing`.
+
+### Real Allegro Data Foundation
+
+MVP v17 zaczyna zastepowac demo danymi oficjalne dane Allegro tam, gdzie API je udostepnia.
+
+Nowe backend endpointy:
+
+```text
+GET /api/allegro/products-search?phrase=
+GET /api/allegro/my-offers
+GET /api/allegro/orders-summary
+GET /api/allegro/categories
+GET /api/allegro/category-parameters?categoryId=
+```
+
+Product Hunter korzysta z `/api/allegro/products-search?phrase=` i pokazuje dane z katalogu produktow Allegro: product name, product id, category id, category path, image i publication status.
+
+Listing Studio ma przycisk `Load real Allegro product data`. Po kliknieciu strona szuka produktu przez `/api/allegro/products-search?phrase=`, wybiera najlepsze dopasowanie i uzupelnia nazwe, Allegro product id, category id, image URL oraz source `Allegro /sale/products`.
+
+Market Analyzer rozdziela trzy typy danych:
+
+- Product catalog data from Allegro
+- Market price data from CSV/import
+- Seller own sales data from Allegro orders
+
+Seller Reality korzysta z `/api/allegro/orders-summary`, ktory liczy z wlasnych zamowien: total orders, total revenue, sold quantity by product name i average order value. W Listing Studio pokazywane jest, czy produkt wystepuje w Twoich zamowieniach, ile sztuk sprzedano, jaki byl obrot i srednia cena sprzedazy.
+
+Wazne: `GET /sale/products` nie udostepnia cen rynkowych. Jesli cen CSV/import nie ma, interfejs pokazuje: `Allegro product catalog does not provide market price data.`
+
+### Real Allegro Dashboard UI
+
+MVP v18 podlacza realne dane Allegro do glownych ekranow frontend.
+
+Jak testowac:
+
+1. Uruchom backend:
+
+```powershell
+cd "C:\Users\Computer\Documents\Codex\2026-06-11\allegro-profit-ai-1-2-3\backend"
+node server.js
+```
+
+2. Otworz OAuth Allegro:
+
+```text
+http://localhost:3000/api/allegro/login
+```
+
+3. Otworz Dashboard:
+
+```text
+http://127.0.0.1:8080/index.html
+```
+
+4. Kliknij `Refresh Allegro data`.
+
+5. Otworz:
+
+```text
+http://127.0.0.1:8080/produkty.html
+http://127.0.0.1:8080/orders.html
+```
+
+6. W Listing Studio wpisz nazwe produktu i kliknij `Load real Allegro product data`, a potem sprawdz `Seller Reality`.
+
+Ekrany korzystaja z helpera `allegro-live.js`, ktory udostepnia `loadAllegroMe()`, `loadAllegroOffers()`, `loadAllegroOrders()`, `calculateOrdersSummary()`, `findMatchingOffer()` i `findMatchingOrders()`.
+
+Jesli token Allegro jest nieaktywny, UI pokazuje komunikat `Click Connect Allegro` i link do OAuth.
+
 Wzory:
 
 ```text
@@ -522,10 +665,10 @@ http://127.0.0.1:8080/product-hunter.html
 Zrodlo:
 
 ```text
-GET http://localhost:3000/api/allegro/search?phrase=...
+GET http://localhost:3000/api/allegro/products-search?phrase=...
 ```
 
-Backend wywoluje aktualny oficjalny endpoint z OpenAPI `swagger.yaml` Allegro:
+Backend wywoluje oficjalny endpoint katalogu Allegro:
 
 ```text
 GET /sale/products?phrase=...&language=pl-PL
@@ -542,6 +685,7 @@ W interfejsie wpisujesz nisze, np. Montessori, Organizer, Kosz, Lampka, Pies, Ko
 - foto
 - nazwa produktu
 - category id
+- category path, jesli API go zwroci
 - publication status
 - product id
 - Send to Listing Studio
@@ -670,4 +814,7 @@ Dlatego sekret musi byc przechowywany tylko po stronie backendu w lokalnym pliku
 - MVP v14: OpenAI AI Engine - backendowy endpoint AI dla Listing Studio.
 - MVP v14.1: Improved AI Listing Studio - lepszy prompt, SEO keywords, risk notes, price recommendation i AI Score.
 - MVP v15: AI Market Analyzer - market data z legalnych importow CSV przekazywane do OpenAI i widoczne jako marketInsight.
+- MVP v16: Market Data localStorage Bridge - wspolny klucz allegroProfitMarketData dla Product Hunter, Market Data Collector i Listing Studio.
+- MVP v17: Real Allegro Data Foundation - oficjalne dane katalogu, ofert, kategorii i zamowien Allegro.
+- MVP v18: Real Allegro Dashboard UI - live dane Allegro na Dashboard, Produkty, Orders i Seller Reality.
 - Backend OAuth Allegro: przygotowany szkielet, bez prawdziwych sekretow w kodzie.
