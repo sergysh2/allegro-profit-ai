@@ -293,7 +293,8 @@ textarea {
   text-transform: uppercase;
 }
 
-.studio-field input {
+.studio-field input,
+.studio-field textarea {
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--line);
@@ -305,9 +306,24 @@ textarea {
   font-weight: 720;
 }
 
-.studio-field input:focus {
+.studio-field textarea {
+  min-height: 92px;
+  padding: 11px;
+  resize: vertical;
+}
+
+.studio-field input:focus,
+.studio-field textarea:focus {
   border-color: var(--orange);
   box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.12);
+}
+
+.market-analyzer {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
 }
 
 .button-row {
@@ -372,6 +388,10 @@ textarea {
 
 .copy-block ul {
   padding-left: 19px;
+}
+
+.compact-result-grid {
+  margin-bottom: 12px;
 }
 
 .saved-panel {
@@ -533,6 +553,20 @@ textarea {
 
 .auth-card.hidden,
 .message.hidden {
+  display: none;
+}
+
+.ai-status {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid rgba(37, 99, 235, 0.24);
+  border-radius: 8px;
+  color: var(--blue);
+  background: var(--blue-soft);
+  font-weight: 850;
+}
+
+.ai-status.hidden {
   display: none;
 }
 

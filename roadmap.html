@@ -39,8 +39,8 @@
           </div>
           <div class="hero-card">
             <span>Status</span>
-            <strong>MVP v13 Market Data Collector gotowe</strong>
-            <p>Collector przygotowuje legalne dane CSV, dopasowuje produkty i zasila Product Hunter oraz Listing Studio.</p>
+            <strong>MVP v15 AI Market Analyzer gotowe</strong>
+            <p>Listing Studio przekazuje legalnie importowane market data do OpenAI i pokazuje marketInsight.</p>
           </div>
         </section>
 
@@ -228,6 +228,53 @@
                 <li>Import supplier CSV i market CSV</li>
                 <li>Auto-match po SKU, EAN i podobnej nazwie</li>
                 <li>Export Product Hunter CSV i Send best products to Listing Studio</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">14</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v14</h3>
+                <span>OpenAI AI Engine gotowe</span>
+              </div>
+              <ul>
+                <li>Endpoint POST /api/ai/listing w backendzie</li>
+                <li>OPENAI_API_KEY tylko w backend/.env</li>
+                <li>Listing Studio generuje tytul, opisy, bullet points, SEO keywords i rekomendacje AI</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">14.1</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v14.1</h3>
+                <span>Improved AI Listing Studio gotowe</span>
+              </div>
+              <ul>
+                <li>Ulepszony prompt OpenAI dla Allegro</li>
+                <li>Nowy JSON: priceRecommendation, riskNotes i score</li>
+                <li>Widok SEO keywords, Price recommendation, Risk notes i AI Score</li>
+                <li>Logowanie requestu, modelu i token usage bez klucza API</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="stage active">
+            <div class="stage-marker">15</div>
+            <div class="stage-content">
+              <div class="stage-heading">
+                <h3>MVP v15</h3>
+                <span>AI Market Analyzer gotowe</span>
+              </div>
+              <ul>
+                <li>Market Analyzer w Listing Studio</li>
+                <li>Use market data z Product Hunter Import i Market Data Collector</li>
+                <li>Przekazywanie marketData do POST /api/ai/listing</li>
+                <li>Market insight: recommendedPrice, competitionLevel, marketPosition, pricingAdvice i keywordAdvice</li>
               </ul>
             </div>
           </article>

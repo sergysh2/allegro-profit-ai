@@ -42,7 +42,7 @@
 
           <div class="actions-card">
             <span>Tryb pracy</span>
-            <strong>Lokalne szablony + kalkulacje</strong>
+            <strong>OpenAI API + kalkulacje</strong>
             <button class="primary-button" id="generate-listing" type="button">Generuj listing</button>
           </div>
         </section>
@@ -78,6 +78,10 @@
                 <input id="packaging-cost" name="packagingCost" type="number" min="0" step="0.01" value="0" />
               </label>
               <label class="studio-field">
+                <span>Reklama</span>
+                <input id="ads-cost" name="adsCost" type="number" min="0" step="0.01" value="0" />
+              </label>
+              <label class="studio-field">
                 <span>Prowizja Allegro %</span>
                 <input id="commission-percent" name="commissionPercent" type="number" min="0" step="0.01" value="10" />
               </label>
@@ -107,12 +111,54 @@
               </label>
             </div>
 
+            <div class="market-analyzer">
+              <div class="finance-toolbar">
+                <div>
+                  <span class="eyebrow">MVP v15</span>
+                  <h2>Market Analyzer</h2>
+                </div>
+                <button class="secondary-button" id="use-market-data" type="button">Use market data</button>
+              </div>
+              <div class="form-grid">
+                <label class="studio-field">
+                  <span>Market avg price</span>
+                  <input id="market-avg-price" name="marketAvgPrice" type="number" min="0" step="0.01" placeholder="0.00" />
+                </label>
+                <label class="studio-field">
+                  <span>Min price</span>
+                  <input id="market-min-price" name="marketMinPrice" type="number" min="0" step="0.01" placeholder="0.00" />
+                </label>
+                <label class="studio-field">
+                  <span>Max price</span>
+                  <input id="market-max-price" name="marketMaxPrice" type="number" min="0" step="0.01" placeholder="0.00" />
+                </label>
+                <label class="studio-field">
+                  <span>Seller count</span>
+                  <input id="seller-count" name="sellerCount" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label class="studio-field">
+                  <span>Popularity</span>
+                  <input id="popularity" name="popularity" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label class="studio-field wide">
+                  <span>Source URL</span>
+                  <input id="market-source-url" name="marketSourceUrl" type="url" placeholder="https://..." />
+                </label>
+                <label class="studio-field wide">
+                  <span>Market notes</span>
+                  <textarea id="market-notes" name="marketNotes" rows="3" placeholder="Notatki z importu CSV, BaseLinker lub dostawcy"></textarea>
+                </label>
+              </div>
+              <p class="message hidden" id="market-message"></p>
+            </div>
+
             <div class="button-row">
               <button class="primary-button" type="submit">Generuj listing</button>
               <button class="secondary-button" id="save-idea" type="button">Zapisz pomysl</button>
               <button class="secondary-button" id="export-baselinker" type="button">Eksport CSV BaseLinker</button>
               <button class="secondary-button" id="export-allegro" type="button">Eksport CSV Allegro</button>
             </div>
+            <p class="ai-status hidden" id="ai-status">AI is generating...</p>
             <p class="message hidden" id="studio-message"></p>
           </form>
 
@@ -154,6 +200,10 @@
                 <strong id="result-score">0</strong>
               </article>
               <article>
+                <span>AI Score</span>
+                <strong id="result-ai-score">0</strong>
+              </article>
+              <article>
                 <span>AI recommendation</span>
                 <strong id="result-recommendation">-</strong>
               </article>
@@ -170,6 +220,37 @@
             <div class="copy-block">
               <h3>Dlugi opis</h3>
               <p id="result-long">-</p>
+            </div>
+            <div class="copy-block">
+              <h3>SEO keywords</h3>
+              <p id="result-seo">-</p>
+            </div>
+            <div class="copy-block">
+              <h3>Price recommendation</h3>
+              <p id="result-price-recommendation">-</p>
+            </div>
+            <div class="copy-block">
+              <h3>Risk notes</h3>
+              <ul id="result-risk-notes"></ul>
+            </div>
+            <div class="copy-block">
+              <h3>Market insight</h3>
+              <div class="result-grid compact-result-grid">
+                <article>
+                  <span>Recommended price</span>
+                  <strong id="result-market-price">-</strong>
+                </article>
+                <article>
+                  <span>Competition level</span>
+                  <strong id="result-competition-level">-</strong>
+                </article>
+                <article>
+                  <span>Market position</span>
+                  <strong id="result-market-position">-</strong>
+                </article>
+              </div>
+              <p><strong>Pricing advice:</strong> <span id="result-pricing-advice">-</span></p>
+              <p><strong>Keyword advice:</strong> <span id="result-keyword-advice">-</span></p>
             </div>
           </section>
         </section>
@@ -209,6 +290,6 @@
       </section>
     </main>
 
-    <script src="listing-studio.js?v=1252"></script>
+    <script src="listing-studio.js?v=1500"></script>
   </body>
 </html>

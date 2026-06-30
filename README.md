@@ -27,6 +27,7 @@ Endpointy:
 - `GET /api/allegro/me`
 - `GET /api/allegro/orders`
 - `GET /api/allegro/offers`
+- `POST /api/ai/listing`
 
 ## Uruchomienie frontend
 
@@ -73,6 +74,8 @@ ALLEGRO_CLIENT_ID=twoj_client_id
 ALLEGRO_CLIENT_SECRET=twoj_client_secret
 ALLEGRO_REDIRECT_URI=http://localhost:3000/api/allegro/callback
 PORT=3000
+OPENAI_API_KEY=twoj_openai_api_key
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 4. Uruchom backend:
@@ -350,11 +353,113 @@ MVP v11 dodaje strone:
 http://127.0.0.1:8080/listing-studio.html
 ```
 
-Modul pomaga przygotowac nowy produkt do sprzedazy na Allegro i eksportu do BaseLinker. Dziala lokalnie, bez zewnetrznego AI API i bez danych klientow.
+Modul pomaga przygotowac nowy produkt do sprzedazy na Allegro i eksportu do BaseLinker. MVP v14 uzywa backendowego endpointu OpenAI, bez zapisywania klucza API we frontendzie i bez danych klientow.
 
 Formularz `Nowy produkt` zawiera link do dostawcy, nazwe towaru, cene zakupu, dostawe, pakowanie, prowizje Allegro, VAT, docelowa marze, foto URL, kategorie, slowa kluczowe i ilosc.
 
-Po kliknieciu `Generuj listing` strona tworzy nazwe Allegro po polsku, krotki opis, dlugi opis, bullet points, SKU, rekomendowana cene sprzedazy, zysk netto, ROI, marze, rekomendacje AI i Product Score 0-100.
+Po kliknieciu `Generuj listing` strona wysyla dane produktu do:
+
+```text
+POST http://localhost:3000/api/ai/listing
+```
+
+Backend generuje nazwe Allegro po polsku, krotki opis, dlugi opis, 5 bullet points, SEO keywords, rekomendacje cenowa, notatki o ryzyku i AI Score 0-100. Frontend lokalnie dolicza SKU, zysk netto, ROI, marze i Product Score 0-100.
+
+Jesli backend nie dziala albo brakuje `OPENAI_API_KEY`, Listing Studio pokazuje komunikat:
+
+```text
+AI service unavailable. Check backend and OPENAI_API_KEY.
+```
+
+Podczas generowania widoczny jest status `AI is generating...`, a przycisk generowania jest czasowo zablokowany.
+
+MVP v14.1 ulepsza prompt OpenAI. AI uwzglednia:
+
+- nazwe towaru
+- cene zakupu
+- VAT
+- docelowa marze
+- kategorie
+- slowa kluczowe
+- ilosc
+- pakowanie
+- dostawe
+- reklame
+
+Odpowiedz backendu ma format:
+
+```json
+{
+  "title": "...",
+  "shortDescription": "...",
+  "bulletPoints": ["...", "...", "...", "...", "..."],
+  "longDescription": "...",
+  "seoKeywords": ["...", "..."],
+  "priceRecommendation": "...",
+  "riskNotes": ["...", "..."],
+  "score": 0
+}
+```
+
+Backend loguje przyjscie requestu, uzywany model oraz token usage, jesli OpenAI API je zwroci. Logi nie zawieraja `OPENAI_API_KEY`.
+
+### AI Market Analyzer
+
+MVP v15 dodaje w Listing Studio blok `Market Analyzer`. Modul nie uzywa scrapingu Allegro HTML i nie probuje korzystac z nieistniejacego publicznego Allegro offers search API. Dane rynkowe pochodza z legalnych zrodel:
+
+- Product Hunter Import CSV
+- Market Data Collector CSV
+- dane zapisane w Listing Studio po uzupelnieniu market data
+- wlasne dane Allegro i importy uzytkownika
+
+Blok zawiera pola:
+
+- market avg price
+- min price
+- max price
+- seller count
+- popularity
+- source url
+- Market notes
+
+Przycisk `Use market data` szuka najlepiej pasujacego wiersza po nazwie produktu albo slowach kluczowych i uzupelnia pola market data. Przy generowaniu listingu frontend wysyla do backendu:
+
+```json
+{
+  "marketData": {
+    "avgPrice": 31.5,
+    "minPrice": 24.99,
+    "maxPrice": 39.99,
+    "sellerCount": 18,
+    "popularity": 75,
+    "sourceUrl": "https://allegro.pl/listing?string=organizer%20do%20szuflady",
+    "notes": "Market product: Organizer do szuflady"
+  }
+}
+```
+
+OpenAI zwraca dodatkowo:
+
+```json
+{
+  "marketInsight": {
+    "recommendedPrice": "...",
+    "competitionLevel": "...",
+    "marketPosition": "...",
+    "pricingAdvice": "...",
+    "keywordAdvice": "..."
+  }
+}
+```
+
+Jesli market data nie sa podlaczone, AI nadal generuje listing, a `marketInsight` informuje, ze dane rynkowe nie zostaly dodane.
+
+Przykladowy CSV dla Product Hunter Import lub Market Data Collector:
+
+```csv
+name,competitor_price,seller_count,popularity,min_price,max_price,avg_price,source_url
+Organizer do szuflady,29.99,18,75,24.99,39.99,31.50,https://allegro.pl/listing?string=organizer%20do%20szuflady
+```
 
 Wzory:
 
@@ -373,6 +478,36 @@ Pomysly produktow sa zapisywane w `localStorage`. Przyciski `Eksport CSV BaseLin
 ```text
 sku,name,price,quantity,description,short_description,category,image_url,keywords,supplier_url,purchase_price,profit,roi,margin,score,recommendation
 ```
+
+### OpenAI AI Engine
+
+Klucz OpenAI musi byc tylko w backendzie. Utworz plik:
+
+```text
+backend\.env
+```
+
+na podstawie:
+
+```text
+backend\.env.example
+```
+
+i wpisz:
+
+```text
+OPENAI_API_KEY=twoj_openai_api_key
+OPENAI_MODEL=gpt-4o-mini
+```
+
+Nastepnie uruchom backend:
+
+```powershell
+cd "C:\Users\Computer\Documents\Codex\2026-06-11\allegro-profit-ai-1-2-3\backend"
+node server.js
+```
+
+Frontend nigdy nie powinien zawierac `OPENAI_API_KEY`, poniewaz kod HTML/JS jest publicznie widoczny w przegladarce i na GitHub Pages. Plik `backend\.env` jest ignorowany przez Git.
 
 ## AI Product Hunter
 
@@ -532,4 +667,7 @@ Dlatego sekret musi byc przechowywany tylko po stronie backendu w lokalnym pliku
 - MVP v11: AI Listing Studio - gotowe lokalnie, bez zewnetrznego AI API.
 - MVP v12.5: AI Product Hunter - bridge Listing Studio + Market Hunter Import.
 - MVP v13: Market Data Collector - legalne CSV, auto-match i eksport do Product Hunter.
+- MVP v14: OpenAI AI Engine - backendowy endpoint AI dla Listing Studio.
+- MVP v14.1: Improved AI Listing Studio - lepszy prompt, SEO keywords, risk notes, price recommendation i AI Score.
+- MVP v15: AI Market Analyzer - market data z legalnych importow CSV przekazywane do OpenAI i widoczne jako marketInsight.
 - Backend OAuth Allegro: przygotowany szkielet, bez prawdziwych sekretow w kodzie.

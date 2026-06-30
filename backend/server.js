@@ -5,6 +5,7 @@ import { URL } from 'node:url';
 const ALLEGRO_AUTH_URL = 'https://allegro.pl/auth/oauth/authorize';
 const ALLEGRO_TOKEN_URL = 'https://allegro.pl/auth/oauth/token';
 const ALLEGRO_API_URL = 'https://api.allegro.pl';
+const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const APP_USER_AGENT = 'AllegroProfitAI/12.2 (+http://localhost:3000)';
 const ALLEGRO_SCOPES = [
   'allegro:api:sale:offers:read',
@@ -53,6 +54,8 @@ function getConfig() {
     clientId: process.env.ALLEGRO_CLIENT_ID || '',
     clientSecret: process.env.ALLEGRO_CLIENT_SECRET || '',
     redirectUri: process.env.ALLEGRO_REDIRECT_URI || 'http://localhost:3000/api/allegro/callback',
+    openaiApiKey: (process.env.OPENAI_API_KEY || '').trim(),
+    openaiModel: (process.env.OPENAI_MODEL || 'gpt-4o-mini').trim() || 'gpt-4o-mini',
     port: Number(process.env.PORT || 3000),
   };
 }
@@ -84,6 +87,30 @@ function requireConfig(response, config) {
 
 function getBasicAuth(config) {
   return Buffer.from(`${config.clientId}:${config.clientSecret}`).toString('base64');
+}
+
+function readRequestBody(request) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+
+    request.on('data', (chunk) => {
+      body += chunk;
+
+      if (body.length > 1024 * 1024) {
+        reject(new Error('Request body too large.'));
+        request.destroy();
+      }
+    });
+
+    request.on('end', () => resolve(body));
+    request.on('error', reject);
+  });
+}
+
+async function readJsonBody(request) {
+  const body = await readRequestBody(request);
+  if (!body.trim()) return {};
+  return JSON.parse(body);
 }
 
 async function exchangeCodeForToken(code, config) {
@@ -359,6 +386,166 @@ async function getSellerOffers() {
   };
 }
 
+function getAiSystemPrompt() {
+  return [
+    'Jestes asystentem Allegro Profit AI.',
+    'Generujesz wysokiej jakosci listing po polsku dla sprzedawcy Allegro.',
+    'Styl ma byc profesjonalny, sprzedazowy i konkretny, ale bez obietnic, ktorych nie da sie udowodnic.',
+    'Uwzgledniasz nazwe produktu, cene zakupu, VAT, docelowa marze, kategorie, slowa kluczowe, ilosc, koszt pakowania, koszt dostawy i reklame.',
+    'Nie wymyslaj certyfikatow, gwarancji, materialow, parametrow technicznych ani zgodnosci, jesli nie wynikaja z danych wejsciowych.',
+    'Jesli marketData jest dostepne, wykorzystaj je do oceny ceny, konkurencji, pozycji rynkowej i slow kluczowych.',
+    'Jesli marketData nie jest dostepne, marketInsight ma jasno powiedziec, ze dane rynkowe nie sa podlaczone.',
+    'Odpowiadasz wylacznie poprawnym JSON bez markdown.',
+    'JSON musi miec dokladnie pola: title, shortDescription, bulletPoints, longDescription, seoKeywords, priceRecommendation, riskNotes, score, marketInsight.',
+    'bulletPoints musi zawierac dokladnie 5 stringow.',
+    'seoKeywords musi byc tablica stringow.',
+    'riskNotes musi byc tablica stringow.',
+    'score musi byc liczba calkowita od 0 do 100.',
+    'priceRecommendation ma opisac rekomendacje cenowa po polsku, nie jako sama liczbe.',
+    'marketInsight musi byc obiektem z polami: recommendedPrice, competitionLevel, marketPosition, pricingAdvice, keywordAdvice.',
+  ].join(' ');
+}
+
+function getFallbackSuggestedPrice(input) {
+  const purchasePrice = Number(input.purchasePrice || 0);
+  const targetMargin = Number(input.targetMargin || 25);
+  const marketAvgPrice = Number(input.marketAvgPrice || 0);
+  const costPrice = purchasePrice > 0 ? purchasePrice / Math.max(0.05, 1 - targetMargin / 100) : 0;
+  return marketAvgPrice > 0 ? marketAvgPrice : costPrice;
+}
+
+function normalizeAiListing(data, input) {
+  const fallbackScore = Math.max(0, Math.min(100, Math.round(Number(data?.score || 0))));
+  const suggestedPrice = Number(data?.suggestedPrice || getFallbackSuggestedPrice(input) || 0);
+  const hasMarketData = Boolean(input?.marketData && Object.keys(input.marketData).length);
+  const marketInsight = data?.marketInsight && typeof data.marketInsight === 'object' ? data.marketInsight : {};
+  return {
+    title: String(data?.title || input.productName || 'Nowy produkt'),
+    shortDescription: String(data?.shortDescription || ''),
+    bulletPoints: Array.isArray(data?.bulletPoints) ? data.bulletPoints.map(String).slice(0, 8) : [],
+    longDescription: String(data?.longDescription || ''),
+    seoKeywords: Array.isArray(data?.seoKeywords) ? data.seoKeywords.map(String).slice(0, 12) : [],
+    suggestedPrice,
+    priceRecommendation: String(
+      data?.priceRecommendation ||
+        data?.aiRecommendation ||
+        `Sprawdz rentownosc przy cenie okolo ${suggestedPrice.toFixed(2)} PLN.`,
+    ),
+    riskNotes: Array.isArray(data?.riskNotes)
+      ? data.riskNotes.map(String).slice(0, 8)
+      : ['Zweryfikuj konkurencje, koszty dostawy i zgodnosc opisu z realnym produktem.'],
+    score: Number.isFinite(fallbackScore) ? fallbackScore : 0,
+    marketInsight: {
+      recommendedPrice: String(marketInsight.recommendedPrice || (hasMarketData ? 'Sprawdz cene wzgledem sredniej rynkowej.' : 'Dane rynkowe nie sa podlaczone.')),
+      competitionLevel: String(marketInsight.competitionLevel || (hasMarketData ? 'Do oceny na podstawie importu CSV.' : 'Brak danych rynkowych.')),
+      marketPosition: String(marketInsight.marketPosition || (hasMarketData ? 'Porownaj oferte z importowanymi danymi rynku.' : 'Dane rynkowe nie sa podlaczone.')),
+      pricingAdvice: String(marketInsight.pricingAdvice || (hasMarketData ? 'Uzyj importowanych cen jako punktu odniesienia.' : 'Dodaj dane CSV w Market Data Collector lub Product Hunter Import.')),
+      keywordAdvice: String(marketInsight.keywordAdvice || (hasMarketData ? 'Dopasuj slowa kluczowe do nazw z importu.' : 'Po imporcie danych AI porowna slowa kluczowe z rynkiem.')),
+    },
+    aiRecommendation: String(data?.aiRecommendation || data?.priceRecommendation || 'Sprawdz marze, konkurencje i dostepnosc przed wystawieniem.'),
+  };
+}
+
+async function generateAiListing(input, config) {
+  console.log('[AI listing] request received');
+  console.log('[AI listing] model', config.openaiModel);
+  console.log('[AI listing] market data', input?.marketData ? 'provided' : 'not provided');
+
+  if (!config.openaiApiKey) {
+    return {
+      statusCode: 503,
+      data: {
+        error: 'ai_unavailable',
+        message: 'AI service unavailable. Check backend and OPENAI_API_KEY.',
+      },
+    };
+  }
+
+  const response = await fetch(OPENAI_API_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.openaiApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: config.openaiModel,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content: getAiSystemPrompt(),
+        },
+        {
+          role: 'user',
+          content: JSON.stringify({
+            productName: input.productName || '',
+            category: input.category || '',
+            keywords: input.keywords || '',
+            purchasePrice: Number(input.purchasePrice || 0),
+            vatPercent: Number(input.vatPercent || 0),
+            targetMargin: Number(input.targetMargin || 25),
+            quantity: Number(input.quantity || 0),
+            packagingCost: Number(input.packagingCost || 0),
+            deliveryCost: Number(input.deliveryCost || 0),
+            adsCost: Number(input.adsCost || 0),
+            marketAvgPrice: Number(input.marketAvgPrice || 0),
+            marketRecommendation: input.marketRecommendation || '',
+            marketNotes: input.marketNotes || '',
+            marketData: input.marketData || null,
+          }),
+        },
+      ],
+      temperature: 0.4,
+    }),
+  });
+
+  const body = await response.text();
+  let data;
+
+  try {
+    data = body ? JSON.parse(body) : {};
+  } catch {
+    data = { raw: body };
+  }
+
+  if (!response.ok) {
+    return {
+      statusCode: 502,
+      data: {
+        error: 'ai_unavailable',
+        message: 'AI service unavailable. Check backend and OPENAI_API_KEY.',
+        details: data?.error?.message || data?.message || response.statusText,
+      },
+    };
+  }
+
+  if (data?.usage) {
+    console.log('[AI listing] token usage', {
+      input: data.usage.prompt_tokens ?? data.usage.input_tokens ?? null,
+      output: data.usage.completion_tokens ?? data.usage.output_tokens ?? null,
+      total: data.usage.total_tokens ?? null,
+    });
+  }
+
+  try {
+    const content = data?.choices?.[0]?.message?.content || '{}';
+    const parsed = JSON.parse(content);
+    return {
+      statusCode: 200,
+      data: normalizeAiListing(parsed, input),
+    };
+  } catch (error) {
+    return {
+      statusCode: 502,
+      data: {
+        error: 'invalid_ai_response',
+        message: 'AI service returned invalid JSON. Try again or adjust product data.',
+        details: error.message,
+      },
+    };
+  }
+}
+
 async function handleRequest(request, response) {
   const config = getConfig();
   const url = new URL(request.url, `http://${request.headers.host}`);
@@ -366,10 +553,32 @@ async function handleRequest(request, response) {
   if (request.method === 'OPTIONS') {
     response.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     });
     response.end();
+    return;
+  }
+
+  if (url.pathname === '/api/ai/listing') {
+    if (request.method !== 'POST') {
+      sendJson(response, 405, {
+        error: 'method_not_allowed',
+        message: 'Use POST /api/ai/listing.',
+      });
+      return;
+    }
+
+    try {
+      const input = await readJsonBody(request);
+      const result = await generateAiListing(input, config);
+      sendJson(response, result.statusCode, result.data);
+    } catch (error) {
+      sendJson(response, 400, {
+        error: 'invalid_request',
+        message: error.message,
+      });
+    }
     return;
   }
 
@@ -464,7 +673,7 @@ async function handleRequest(request, response) {
 
   sendJson(response, 404, {
     error: 'not_found',
-    message: 'Available endpoints: /api/allegro/login, /api/allegro/callback, /api/allegro/search?phrase=, /api/allegro/me, /api/allegro/orders, /api/allegro/offers',
+    message: 'Available endpoints: /api/ai/listing, /api/allegro/login, /api/allegro/callback, /api/allegro/search?phrase=, /api/allegro/me, /api/allegro/orders, /api/allegro/offers',
   });
 }
 
